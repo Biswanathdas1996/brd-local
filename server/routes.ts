@@ -5,7 +5,7 @@ import path from "path";
 import { storage } from "./storage";
 import { processUploadedFile, getSampleTranscripts } from "./services/fileProcessor";
 import { generateBrd } from "./services/anthropic";
-import { insertTranscriptSchema, insertBrdSchema } from "@shared/schema";
+import { insertTranscriptSchema, insertBrdSchema, insertTeamSchema, insertClientSchema } from "@shared/schema";
 
 const upload = multer({
   dest: 'uploads/',
@@ -47,6 +47,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(teams);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch teams" });
+    }
+  });
+
+  // Create new team
+  app.post("/api/teams", async (req, res) => {
+    try {
+      const teamData = insertTeamSchema.parse(req.body);
+      const team = await storage.createTeam(teamData);
+      res.json(team);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Create new client
+  app.post("/api/clients", async (req, res) => {
+    try {
+      const clientData = insertClientSchema.parse(req.body);
+      const client = await storage.createClient(clientData);
+      res.json(client);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
     }
   });
 
@@ -120,7 +142,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create BRD record with generating status
       const brd = await storage.createBrd({
         ...brdData,
-        content: {},
         status: "generating",
       });
 

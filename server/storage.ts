@@ -165,6 +165,7 @@ export class MemStorage implements IStorage {
       id: this.currentBrdId++,
       generatedAt: new Date(),
       status: insertBrd.status || "generating",
+      content: insertBrd.content || {},
     };
     this.brds.set(brd.id, brd);
     return brd;

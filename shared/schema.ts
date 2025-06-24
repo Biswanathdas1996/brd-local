@@ -57,7 +57,9 @@ export const insertTranscriptSchema = createInsertSchema(transcripts).omit({
 export const insertBrdSchema = createInsertSchema(brds).omit({
   id: true,
   generatedAt: true,
+  content: true,
 }).extend({
+  content: z.any().optional(),
   processArea: z.enum([
     "account_mgmt",
     "loan_processing", 

@@ -87,10 +87,16 @@ This is a Business Requirements Document (BRD) generator application built for P
 - **AI Service**: `ANTHROPIC_API_KEY` environment variable required
 - **File Uploads**: Local uploads directory with 10MB size limit
 
-## Changelog
+## Recent Changes
 
-Changelog:
-- June 24, 2025. Initial setup
+June 24, 2025:
+- Initial BRD Generator application setup
+- Added client and team hierarchy management
+- Implemented file upload with .txt, .pdf, .docx support
+- Created sample transcript files for testing
+- Integrated Anthropic Claude API for BRD generation
+- Added team creation functionality to resolve empty dropdown issue
+- Fixed TypeScript errors and HTML validation warnings
 
 ## User Preferences
 

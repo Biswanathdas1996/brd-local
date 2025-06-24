@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import FileUpload from "@/components/file-upload";
 import BrdDisplay from "@/components/brd-display";
+import AddTeamDialog from "@/components/add-team-dialog";
 
 const brdFormSchema = z.object({
   clientId: z.string().min(1, "Please select a client"),
@@ -334,11 +335,22 @@ Target System: ${targetSystemLabels[currentBrd.targetSystem as keyof typeof targ
                     name="teamId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Team</FormLabel>
+                        <FormLabel className="flex items-center justify-between">
+                          Team
+                          {selectedClientId && (
+                            <AddTeamDialog 
+                              clientId={selectedClientId} 
+                              onTeamAdded={(team) => {
+                                // Auto-select the newly created team
+                                form.setValue("teamId", team.id.toString());
+                              }}
+                            />
+                          )}
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={!selectedClientId}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a team..." />
+                              <SelectValue placeholder={selectedClientId ? "Select a team..." : "Select a client first"} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
