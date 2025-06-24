@@ -113,6 +113,7 @@ export default function BrdGenerator() {
   const selectedClientId = form.watch("clientId");
   const { data: teams } = useQuery({
     queryKey: ["/api/teams", selectedClientId],
+    queryFn: () => fetch(`/api/teams/${selectedClientId}`).then(res => res.json()),
     enabled: !!selectedClientId,
   });
 
