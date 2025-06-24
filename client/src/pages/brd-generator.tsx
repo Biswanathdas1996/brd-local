@@ -217,6 +217,31 @@ export default function BrdGenerator() {
     }
   };
 
+  const handleViewTranscript = () => {
+    if (uploadedTranscript) {
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>Transcript: ${uploadedTranscript.filename}</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                h1 { color: #333; border-bottom: 2px solid #0079F2; padding-bottom: 10px; }
+                .content { background: #f9f9f9; padding: 20px; border-radius: 8px; white-space: pre-wrap; }
+              </style>
+            </head>
+            <body>
+              <h1>${uploadedTranscript.filename}</h1>
+              <div class="content">${uploadedTranscript.content}</div>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+    }
+  };
+
   const handleDownload = () => {
     if (!currentBrd) return;
     
