@@ -50,7 +50,10 @@ const brdFormSchema = z.object({
     "kony_banking",
     "mindtree_digital",
     "rbi_rtgs_neft",
-    "npci_upi"
+    "npci_upi",
+    "salesforce_financial_services",
+    "microsoft_dynamics_365",
+    "custom_application_development"
   ]),
   template: z.enum(["standard", "agile", "detailed", "executive"]).default("standard"),
   analysisDepth: z.enum(["basic", "detailed", "comprehensive"]).default("detailed"),
@@ -87,6 +90,9 @@ const targetSystemLabels = {
   mindtree_digital: "Mindtree Digital Banking",
   rbi_rtgs_neft: "RBI RTGS/NEFT System",
   npci_upi: "NPCI UPI Platform",
+  salesforce_financial_services: "Salesforce Financial Services Cloud",
+  microsoft_dynamics_365: "Microsoft Dynamics 365",
+  custom_application_development: "Custom Application Development",
 };
 
 export default function BrdGenerator() {

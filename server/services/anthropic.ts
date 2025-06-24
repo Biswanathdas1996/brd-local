@@ -24,6 +24,10 @@ export interface BrdRequest {
 }
 
 export interface BrdContent {
+  tableOfContents: Array<{
+    section: string;
+    pageNumber: number;
+  }>;
   executiveSummary: string;
   functionalRequirements: Array<{
     id: string;
@@ -42,9 +46,22 @@ export interface BrdContent {
     title: string;
     description: string;
   }>;
+  raciMatrix: Array<{
+    task: string;
+    responsible: string;
+    accountable: string;
+    consulted: string;
+    informed: string;
+  }>;
   assumptions: string[];
   constraints: string[];
   riskMitigation: string[];
+  changelog: Array<{
+    version: string;
+    date: string;
+    author: string;
+    changes: string;
+  }>;
 }
 
 export async function generateBrd(request: BrdRequest): Promise<BrdContent> {

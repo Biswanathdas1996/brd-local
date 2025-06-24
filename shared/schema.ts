@@ -87,7 +87,10 @@ export const insertBrdSchema = createInsertSchema(brds).omit({
     "kony_banking",
     "mindtree_digital",
     "rbi_rtgs_neft",
-    "npci_upi"
+    "npci_upi",
+    "salesforce_financial_services",
+    "microsoft_dynamics_365",
+    "custom_application_development"
   ]),
   template: z.enum(["standard", "agile", "detailed", "executive"]).default("standard"),
   analysisDepth: z.enum(["basic", "detailed", "comprehensive"]).default("detailed"),
