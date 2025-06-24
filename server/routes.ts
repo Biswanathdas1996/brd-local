@@ -1,0 +1,213 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import multer from "multer";
+import path from "path";
+import { storage } from "./storage";
+import { processUploadedFile, getSampleTranscripts } from "./services/fileProcessor";
+import { generateBrd } from "./services/anthropic";
+import { insertTranscriptSchema, insertBrdSchema } from "@shared/schema";
+
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req: any, file: any, cb: any) => {
+    const allowedTypes = ['.txt', '.pdf', '.docx'];
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedTypes.includes(fileExt)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only .txt, .pdf, and .docx files are allowed.'));
+    }
+  },
+});
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Get all clients
+  app.get("/api/clients", async (req, res) => {
+    try {
+      const clients = await storage.getClients();
+      res.json(clients);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch clients" });
+    }
+  });
+
+  // Get teams by client
+  app.get("/api/teams/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      const teams = await storage.getTeamsByClient(clientId);
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch teams" });
+    }
+  });
+
+  // Get sample transcripts
+  app.get("/api/sample-transcripts", async (req, res) => {
+    try {
+      const samples = getSampleTranscripts();
+      res.json(samples);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch sample transcripts" });
+    }
+  });
+
+  // Upload transcript file
+  app.post("/api/upload-transcript", upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const processedFile = await processUploadedFile(req.file.path, req.file.originalname);
+      
+      const transcriptData = insertTranscriptSchema.parse({
+        filename: processedFile.filename,
+        content: processedFile.content,
+        fileType: processedFile.fileType,
+      });
+
+      const transcript = await storage.createTranscript(transcriptData);
+      res.json(transcript);
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Load sample transcript
+  app.post("/api/load-sample", async (req, res) => {
+    try {
+      const { sampleName } = req.body;
+      const samples = getSampleTranscripts();
+      const sample = samples.find(s => s.name === sampleName);
+      
+      if (!sample) {
+        return res.status(404).json({ message: "Sample transcript not found" });
+      }
+
+      const transcriptData = insertTranscriptSchema.parse({
+        filename: sample.name,
+        content: sample.content,
+        fileType: "txt",
+      });
+
+      const transcript = await storage.createTranscript(transcriptData);
+      res.json({ 
+        transcript, 
+        suggestedProcessArea: sample.processArea,
+        suggestedTargetSystem: sample.targetSystem 
+      });
+    } catch (error: any) {
+      console.error('Sample load error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Generate BRD
+  app.post("/api/generate-brd", async (req, res) => {
+    try {
+      const brdData = insertBrdSchema.parse(req.body);
+      
+      // Create BRD record with generating status
+      const brd = await storage.createBrd({
+        ...brdData,
+        content: {},
+        status: "generating",
+      });
+
+      // Get related data for context
+      const [client, team, transcript] = await Promise.all([
+        storage.getClient(brdData.clientId),
+        storage.getTeam(brdData.teamId),
+        storage.getTranscript(brdData.transcriptId),
+      ]);
+
+      if (!client || !team || !transcript) {
+        await storage.updateBrdStatus(brd.id, "failed");
+        return res.status(400).json({ message: "Invalid client, team, or transcript ID" });
+      }
+
+      // Return the BRD ID immediately for status tracking
+      res.json({ brdId: brd.id, status: "generating" });
+
+      // Generate BRD asynchronously
+      try {
+        const brdContent = await generateBrd({
+          transcriptContent: transcript.content,
+          processArea: brdData.processArea,
+          targetSystem: brdData.targetSystem,
+          template: brdData.template,
+          analysisDepth: brdData.analysisDepth,
+          clientName: client.name,
+          teamName: team.name,
+        });
+
+        await storage.updateBrdStatus(brd.id, "completed", brdContent);
+      } catch (error) {
+        console.error('BRD generation error:', error);
+        await storage.updateBrdStatus(brd.id, "failed");
+      }
+    } catch (error: any) {
+      console.error('BRD creation error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get BRD status
+  app.get("/api/brd/:id", async (req, res) => {
+    try {
+      const brdId = parseInt(req.params.id);
+      if (isNaN(brdId)) {
+        return res.status(400).json({ message: "Invalid BRD ID" });
+      }
+
+      const brd = await storage.getBrd(brdId);
+      if (!brd) {
+        return res.status(404).json({ message: "BRD not found" });
+      }
+
+      res.json(brd);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch BRD" });
+    }
+  });
+
+  // Get BRD history
+  app.get("/api/brds", async (req, res) => {
+    try {
+      const brds = await storage.getBrds();
+      
+      // Enhance with client and team names
+      const enhancedBrds = await Promise.all(
+        brds.map(async (brd) => {
+          const [client, team] = await Promise.all([
+            storage.getClient(brd.clientId),
+            storage.getTeam(brd.teamId),
+          ]);
+          
+          return {
+            ...brd,
+            clientName: client?.name || "Unknown",
+            teamName: team?.name || "Unknown",
+          };
+        })
+      );
+
+      res.json(enhancedBrds);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch BRD history" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
