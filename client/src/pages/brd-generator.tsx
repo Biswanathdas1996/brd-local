@@ -24,31 +24,33 @@ const brdFormSchema = z.object({
   teamId: z.string().min(1, "Please select a team"),
   transcriptId: z.string().min(1, "Please upload a transcript"),
   processArea: z.enum([
-    "account_mgmt",
+    "account_opening",
     "loan_processing", 
     "customer_onboarding",
-    "risk_management",
-    "compliance",
+    "kyc_aml_compliance",
+    "digital_banking",
     "payment_processing",
     "credit_assessment",
-    "data_management",
-    "reporting",
-    "digital_banking"
+    "priority_banking",
+    "trade_finance",
+    "treasury_management",
+    "regulatory_reporting",
+    "risk_management"
   ]),
   targetSystem: z.enum([
     "finacle",
     "temenos_t24",
-    "oracle_banking",
-    "fiserv_dna",
-    "finnone_lms",
-    "finastra_lending",
-    "mambu",
-    "salesforce_crm",
-    "microsoft_dynamics",
-    "pegasystems",
-    "sas_risk",
-    "moody_analytics",
-    "algorithmics"
+    "infosys_banking_platform",
+    "oracle_flexcube",
+    "tcs_bancs",
+    "nucleus_software",
+    "intellect_design_arena",
+    "newgen_software",
+    "mantra_omnichannel",
+    "kony_banking",
+    "mindtree_digital",
+    "rbi_rtgs_neft",
+    "npci_upi"
   ]),
   template: z.enum(["standard", "agile", "detailed", "executive"]).default("standard"),
   analysisDepth: z.enum(["basic", "detailed", "comprehensive"]).default("detailed"),
@@ -57,32 +59,34 @@ const brdFormSchema = z.object({
 type BrdFormData = z.infer<typeof brdFormSchema>;
 
 const processAreaLabels = {
-  account_mgmt: "Account Management",
-  loan_processing: "Loan Processing",
+  account_opening: "Account Opening & Management",
+  loan_processing: "Loan Processing & Origination",
   customer_onboarding: "Customer Onboarding",
+  kyc_aml_compliance: "KYC & AML Compliance",
+  digital_banking: "Digital Banking & Mobile",
+  payment_processing: "Payment & Settlement",
+  credit_assessment: "Credit Assessment & Scoring",
+  priority_banking: "Priority Banking Services",
+  trade_finance: "Trade Finance & LC",
+  treasury_management: "Treasury & Investment",
+  regulatory_reporting: "Regulatory Reporting",
   risk_management: "Risk Management",
-  compliance: "Compliance & Regulatory",
-  payment_processing: "Payment Processing",
-  credit_assessment: "Credit Assessment",
-  data_management: "Data Management",
-  reporting: "Reporting & Analytics",
-  digital_banking: "Digital Banking",
 };
 
 const targetSystemLabels = {
-  finacle: "Finacle Core Banking",
+  finacle: "Infosys Finacle",
   temenos_t24: "Temenos T24",
-  oracle_banking: "Oracle Banking Platform",
-  fiserv_dna: "Fiserv DNA",
-  finnone_lms: "Finnone LMS",
-  finastra_lending: "Finastra Lending",
-  mambu: "Mambu",
-  salesforce_crm: "Salesforce CRM",
-  microsoft_dynamics: "Microsoft Dynamics 365",
-  pegasystems: "Pegasystems",
-  sas_risk: "SAS Risk Management",
-  moody_analytics: "Moody's Analytics",
-  algorithmics: "IBM Algorithmics",
+  infosys_banking_platform: "Infosys Banking Platform",
+  oracle_flexcube: "Oracle FLEXCUBE",
+  tcs_bancs: "TCS BaNCS",
+  nucleus_software: "Nucleus Software FinnOne",
+  intellect_design_arena: "Intellect Design Arena",
+  newgen_software: "NewGen Banking Suite",
+  mantra_omnichannel: "Mantra Omnichannel Banking",
+  kony_banking: "Kony Digital Banking",
+  mindtree_digital: "Mindtree Digital Banking",
+  rbi_rtgs_neft: "RBI RTGS/NEFT System",
+  npci_upi: "NPCI UPI Platform",
 };
 
 export default function BrdGenerator() {
@@ -275,14 +279,14 @@ Target System: ${targetSystemLabels[currentBrd.targetSystem as keyof typeof targ
                 </div>
                 <div>
                   <h1 className="text-lg font-semibold text-slate-900">BRD Generator</h1>
-                  <p className="text-xs text-slate-500">Financial Services Advisory</p>
+                  <p className="text-xs text-slate-500">Indian Banking Systems Advisory</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900">Sarah Johnson</p>
-                <p className="text-xs text-slate-500">Senior Consultant</p>
+                <p className="text-sm font-medium text-slate-900">Priya Sharma</p>
+                <p className="text-xs text-slate-500">Banking Consultant</p>
               </div>
               <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
                 <User className="text-slate-600 text-sm" />

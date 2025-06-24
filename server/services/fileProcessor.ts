@@ -56,159 +56,163 @@ export async function processUploadedFile(filePath: string, originalName: string
 export function getSampleTranscripts(): Array<{ name: string; content: string; processArea: string; targetSystem: string }> {
   return [
     {
-      name: "loan_processing_workshop.txt",
-      content: `Workshop Transcript - Loan Processing Requirements
+      name: "personal_loan_digitization.txt",
+      content: `Workshop Transcript - Personal Loan Digital Processing
 
 Date: March 15, 2024
-Participants: Operations Manager, Credit Manager, IT Lead, Business Analyst
+Bank: HDFC Bank
+Participants: Branch Manager, Credit Officer, IT Head, Compliance Officer
 
-Operations Manager: We need to streamline our loan application process. Currently, it takes too long to approve simple loans.
+Branch Manager: We need to digitize our personal loan processing to compete with fintech companies. Current TAT is 7-10 days which is too long.
 
-Credit Manager: The main bottleneck is manual credit score verification. We're still calling credit bureaus manually for each application.
+Credit Officer: Main challenges are CIBIL verification, income assessment, and KYC compliance. We're still doing manual verification for most documents.
 
-IT Lead: Our current system doesn't integrate well with external credit services. We need API integration capabilities.
+IT Head: Our current Finacle system can integrate with CIBIL and other bureau APIs. We need to automate the credit scoring based on RBI guidelines.
 
-Business Analyst: What's the target processing time for standard loan applications?
+Compliance Officer: What about KYC compliance and RBI regulations for digital lending?
 
-Operations Manager: Ideally, we want standard personal loans under $50K to be approved within 24 hours, and auto loans within 48 hours.
+Branch Manager: We want to reduce processing time to 24-48 hours for loans up to ₹5 lakh with proper risk assessment.
 
-Credit Manager: We also need automated decision rules based on credit score, debt-to-income ratio, and employment verification.
+Credit Officer: We need automated FOIR calculation, employment verification through EPFO/ITR, and integration with bank statement analysis.
 
-IT Lead: For security, all customer data must be encrypted both at rest and in transit. We need audit logs for all credit checks.
+IT Head: All customer data must comply with RBI data localization norms. We need audit trails for regulatory reporting.
 
-Operations Manager: The system should also generate approval letters automatically and integrate with our account management system to set up the loan accounts.
+Branch Manager: System should auto-generate loan agreements and integrate with CBS for loan booking and disbursement.
 
-Credit Manager: Don't forget about regulatory compliance - we need to ensure all decisions are documented with clear reasoning for audit purposes.
+Compliance Officer: Ensure all decisions follow RBI fair lending practices and maintain detailed logs for RBI inspection.
 
-Business Analyst: What about exception handling for applications that don't meet automated criteria?
-
-Operations Manager: Those should be flagged for manual review by our underwriting team, with all relevant data pre-populated for quick decision making.`,
+Credit Officer: For exceptions and high-risk cases, route to senior underwriters with complete risk profile and recommendations.`,
       processArea: "loan_processing",
       targetSystem: "finacle"
     },
     {
-      name: "customer_onboarding_session.docx",
-      content: `Customer Onboarding Workshop - Digital Transformation Initiative
+      name: "digital_account_opening_sbi.docx",
+      content: `Digital Account Opening Workshop - YONO Integration
 
 Workshop Date: March 14, 2024
-Client: Premier Financial Services
-Focus: CRM Integration for Customer Onboarding
+Bank: State Bank of India
+Focus: Digital Account Opening through YONO Platform
 
 Key Requirements Discussed:
 
-1. Digital Account Opening
-- Customers should be able to open accounts online without visiting branches
-- Identity verification must be automated using government ID APIs
-- Document upload and verification system needed
-- Electronic signature integration required
+1. Aadhaar-based Digital KYC
+- Integrate with UIDAI for Aadhaar authentication
+- Video KYC for account opening as per RBI guidelines
+- PAN verification through Income Tax database
+- Digital signature using Aadhaar eSign
 
-2. Customer Data Management
-- Single customer view across all channels
-- Real-time data synchronization between systems
-- Customer communication preferences tracking
-- Marketing consent management
+2. Account Types & Features
+- Savings account with different variants (Basic, Regular, Premium)
+- Current account for business customers
+- Automatic upgrade based on customer profile
+- Integration with Jan Dhan Yojana requirements
 
-3. Onboarding Workflow
-- Step-by-step guided process for different account types
-- Progress tracking for incomplete applications
-- Automated email/SMS notifications at each stage
-- Customer service integration for support during onboarding
+3. Mobile-First Onboarding
+- YONO app integration for seamless experience
+- Progressive profiling with minimal initial data
+- Document upload with AI-based verification
+- Real-time status updates via SMS/Push notifications
 
-4. Compliance Requirements
-- KYC (Know Your Customer) compliance automation
-- AML (Anti-Money Laundering) screening integration
-- Regulatory reporting capabilities
-- Data privacy compliance (GDPR, CCPA)
+4. Regulatory Compliance
+- RBI KYC norms compliance
+- PMLA (Prevention of Money Laundering Act) requirements
+- UBO (Ultimate Beneficial Owner) verification for entities
+- FATCA/CRS compliance for NRI customers
 
-5. Integration Points
-- Core banking system integration
-- Credit bureau connectivity
-- Identity verification services
-- Email/SMS gateway integration
-- Document management system
+5. System Integration
+- Core Banking System (Finacle) integration
+- CIBIL and other credit bureau connectivity
+- Aadhaar verification through UIDAI
+- PAN verification through NSDL/UTI
+- Mobile number verification through telecom APIs
 
-6. Performance Requirements
-- Account opening process should complete in under 15 minutes
-- System must handle 1000+ concurrent users
-- 99.9% uptime requirement
-- Mobile-responsive design mandatory
+6. Performance & Security
+- Account opening within 10 minutes for existing customers
+- Fraud prevention with real-time monitoring
+- Data encryption as per RBI cybersecurity guidelines
+- Biometric authentication support
 
 Success Metrics:
-- Reduce account opening time from 2 days to same-day
-- Increase customer satisfaction scores by 25%
-- Reduce manual processing by 80%`,
+- 90% digital account opening by FY end
+- Reduce branch visits by 70%
+- Customer satisfaction score above 4.5/5`,
       processArea: "customer_onboarding",
-      targetSystem: "salesforce_crm"
+      targetSystem: "finacle"
     },
     {
-      name: "risk_management_requirements.pdf",
-      content: `Risk Management System Requirements Workshop
+      name: "upi_integration_requirements.pdf",
+      content: `UPI Integration Requirements Workshop
 
-Metro Credit Union - Risk Management Implementation
+ICICI Bank - UPI Payment Gateway Enhancement
 Date: March 13, 2024
 
 Executive Summary:
-Metro Credit Union requires implementation of comprehensive risk management capabilities to enhance their current risk assessment and monitoring processes.
+ICICI Bank requires enhanced UPI integration capabilities to improve digital payment processing and customer experience in line with NPCI guidelines.
 
 Current State Analysis:
-- Manual risk assessment processes
-- Fragmented data sources
-- Limited real-time monitoring
-- Regulatory compliance challenges
-- Inconsistent risk reporting
+- Basic UPI integration with limited features
+- Manual reconciliation processes
+- Delayed transaction status updates
+- Limited support for UPI 2.0 features
+- Inconsistent payment success rates
 
 Future State Requirements:
 
-1. Credit Risk Management
-- Automated credit scoring models
-- Portfolio risk analysis
-- Concentration risk monitoring
-- Early warning systems for deteriorating loans
-- Stress testing capabilities
+1. UPI 2.0 Feature Implementation
+- UPI Mandate for recurring payments
+- Signed Intent QR codes
+- Invoice in the Inbox functionality
+- UPI ID with bank account linking
+- Overdraft facility integration
 
-2. Operational Risk
-- Incident tracking and management
-- Key Risk Indicator (KRI) monitoring
-- Control effectiveness assessment
-- Risk event correlation analysis
-- Business continuity planning integration
+2. Real-time Processing
+- Instant payment confirmation
+- Real-time balance updates
+- Push notification integration
+- Transaction status tracking
+- Automated reconciliation
 
-3. Market Risk
-- Interest rate risk measurement
-- Liquidity risk monitoring
-- Asset-liability management
-- Value at Risk (VaR) calculations
-- Scenario analysis capabilities
+3. Merchant Integration
+- QR code generation and management
+- Merchant dashboard for transaction monitoring
+- Settlement and remittance automation
+- Dispute management system
+- Analytics and reporting tools
 
 4. Regulatory Compliance
-- Automated regulatory reporting
-- Compliance monitoring dashboards
-- Audit trail maintenance
-- Policy exception tracking
-- Regulatory change management
+- NPCI guidelines adherence
+- RBI digital payment norms
+- AML transaction monitoring
+- Fraud detection and prevention
+- Regulatory reporting automation
 
-5. Risk Reporting
-- Executive dashboard development
-- Risk appetite monitoring
-- Regulatory report generation
-- Board-level risk presentations
-- Trend analysis and forecasting
+5. Security Framework
+- Two-factor authentication
+- Device fingerprinting
+- Risk-based authentication
+- Transaction limits management
+- Secure API gateway
 
-Technical Requirements:
-- Real-time data processing capabilities
-- Integration with core banking systems
-- Advanced analytics and modeling tools
-- Secure data handling and storage
-- Scalable architecture for future growth
+6. Integration Points
+- Core Banking System (TCS BaNCS)
+- NPCI UPI switch connectivity
+- SMS gateway integration
+- Push notification services
+- Fraud management system
 
-Performance Criteria:
-- Sub-second response times for risk queries
-- 24/7 system availability
-- Processing of 10M+ transactions daily
-- Support for 500+ concurrent users
-- 99.95% system uptime requirement`,
-      processArea: "risk_management",
-      targetSystem: "sas_risk"
+Performance Requirements:
+- 99.9% transaction success rate
+- Response time under 5 seconds
+- Support for 10,000 TPS
+- 24x7 availability
+- Zero-downtime deployments
+
+Success Metrics:
+- Increase UPI transaction volume by 200%
+- Reduce transaction failures to <1%
+- Improve customer satisfaction to 4.8/5`,
+      processArea: "payment_processing",
+      targetSystem: "npci_upi"
     }
   ];
 }

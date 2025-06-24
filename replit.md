@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a Business Requirements Document (BRD) generator application built for PwC Financial Services Advisory consultants. The application converts call transcripts into structured BRDs using AI technology, specifically leveraging Anthropic's Claude API. It features a full-stack architecture with a React frontend and Express.js backend, designed to streamline the process of creating professional business requirements documentation.
+This is a Business Requirements Document (BRD) generator application built for Indian banking advisory consultants. The application converts call transcripts into structured BRDs using AI technology, specifically leveraging Anthropic's Claude API. It features a full-stack architecture with a React frontend and Express.js backend, designed to streamline the process of creating professional business requirements documentation for Indian banking systems and regulatory compliance.
 
 ## System Architecture
 
