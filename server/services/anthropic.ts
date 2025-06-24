@@ -64,6 +64,78 @@ export interface BrdContent {
   }>;
 }
 
+export async function generateRequirementEnhancements(requirement: any, context: any): Promise<any> {
+  const systemPrompt = `You are an expert business analyst specializing in requirement enhancement for Indian banking systems. Your task is to analyze a functional requirement and provide specific, actionable suggestions to improve it.
+
+Focus on:
+- Clarity and specificity
+- Measurable acceptance criteria
+- Technical feasibility
+- Regulatory compliance (RBI guidelines)
+- User experience improvements
+- Security considerations
+- Performance requirements
+
+Provide both general suggestions and an enhanced version of the requirement.`;
+
+  const userPrompt = `Please analyze this functional requirement and provide enhancement suggestions:
+
+**Current Requirement:**
+ID: ${requirement.id}
+Title: ${requirement.title}
+Description: ${requirement.description}
+Priority: ${requirement.priority}
+Complexity: ${requirement.complexity}
+
+**Context:**
+Process Area: ${context.processArea}
+Target System: ${context.targetSystem}
+
+Please provide:
+1. List of specific improvement suggestions
+2. An enhanced version of the requirement with better clarity, acceptance criteria, and technical details
+
+Format your response as JSON:
+{
+  "suggestions": ["suggestion 1", "suggestion 2", ...],
+  "enhancedRequirement": {
+    "id": "enhanced_id",
+    "title": "enhanced_title",
+    "description": "enhanced_description_with_acceptance_criteria",
+    "priority": "priority",
+    "complexity": "complexity"
+  }
+}`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: DEFAULT_MODEL_STR,
+      system: systemPrompt,
+      max_tokens: 2000,
+      messages: [
+        { role: 'user', content: userPrompt }
+      ],
+    });
+
+    const content = response.content[0];
+    if (content.type !== 'text') {
+      throw new Error('Unexpected response type from Anthropic API');
+    }
+
+    // Extract JSON from markdown code blocks if present
+    let jsonText = content.text;
+    const jsonMatch = content.text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
+
+    return JSON.parse(jsonText);
+  } catch (error) {
+    console.error('Error generating requirement enhancements:', error);
+    throw new Error(`Failed to generate enhancement suggestions: ${error.message}`);
+  }
+}
+
 export async function generateBrd(request: BrdRequest): Promise<BrdContent> {
   const systemPrompt = `You are an expert business analyst specializing in financial services and enterprise software implementations. Your task is to analyze call transcripts from business requirements gathering workshops and generate comprehensive Business Requirements Documents (BRDs).
 

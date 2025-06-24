@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
 import { processUploadedFile, getSampleTranscripts } from "./services/fileProcessor";
-import { generateBrd } from "./services/anthropic";
+import { generateBrd, generateRequirementEnhancements } from "./services/anthropic";
 import { insertTranscriptSchema, insertBrdSchema, insertTeamSchema, insertClientSchema } from "@shared/schema";
 
 const upload = multer({
@@ -131,6 +131,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Sample load error:', error);
       res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Enhance requirement endpoint
+  app.post("/api/enhance-requirement", async (req, res) => {
+    try {
+      const { requirement, context } = req.body;
+      
+      const suggestions = await generateRequirementEnhancements(requirement, context);
+      res.json(suggestions);
+    } catch (error) {
+      console.error('Enhancement error:', error);
+      res.status(500).json({ message: "Failed to generate enhancement suggestions" });
+    }
+  });
+
+  // Update requirement endpoint
+  app.put("/api/brd/:brdId/requirement/:requirementId", async (req, res) => {
+    try {
+      const { brdId, requirementId } = req.params;
+      const updatedRequirement = req.body;
+      
+      const brd = await storage.getBrd(parseInt(brdId));
+      if (!brd) {
+        return res.status(404).json({ message: "BRD not found" });
+      }
+
+      // Update the specific requirement
+      const content = brd.content as any;
+      const reqIndex = content.functionalRequirements.findIndex((req: any) => req.id === requirementId);
+      
+      if (reqIndex === -1) {
+        return res.status(404).json({ message: "Requirement not found" });
+      }
+
+      content.functionalRequirements[reqIndex] = updatedRequirement;
+      
+      await storage.updateBrdStatus(parseInt(brdId), brd.status, content);
+      res.json({ message: "Requirement updated successfully" });
+    } catch (error) {
+      console.error('Update requirement error:', error);
+      res.status(500).json({ message: "Failed to update requirement" });
     }
   });
 
