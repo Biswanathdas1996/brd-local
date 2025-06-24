@@ -23,10 +23,11 @@ This is a Business Requirements Document (BRD) generator application built for P
 - **AI Integration**: Anthropic Claude API for BRD content generation
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL with Drizzle ORM
-- **Schema Management**: Drizzle Kit for migrations
-- **Storage Strategy**: In-memory storage implementation with fallback to database
+- **Database**: PostgreSQL with Drizzle ORM and Neon serverless support
+- **Schema Management**: Drizzle Kit for migrations and schema updates
+- **Storage Strategy**: Full database persistence with Drizzle ORM
 - **File Storage**: Local file system for uploaded transcripts
+- **Connection**: Serverless PostgreSQL with WebSocket support
 
 ## Key Components
 
@@ -97,6 +98,9 @@ June 24, 2025:
 - Integrated Anthropic Claude API for BRD generation
 - Added team creation functionality to resolve empty dropdown issue
 - Fixed TypeScript errors and HTML validation warnings
+- Migrated from in-memory storage to PostgreSQL database
+- Added database seeding with sample clients and teams
+- Implemented full CRUD operations with Drizzle ORM
 
 ## User Preferences
 

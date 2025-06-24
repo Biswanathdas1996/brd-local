@@ -3,6 +3,8 @@ import {
   type Client, type Team, type Transcript, type Brd,
   type InsertClient, type InsertTeam, type InsertTranscript, type InsertBrd
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Clients
@@ -186,4 +188,93 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getClients(): Promise<Client[]> {
+    return await db.select().from(clients);
+  }
+
+  async getClient(id: number): Promise<Client | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
+  }
+
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const [client] = await db
+      .insert(clients)
+      .values(insertClient)
+      .returning();
+    return client;
+  }
+
+  async getTeams(): Promise<Team[]> {
+    return await db.select().from(teams);
+  }
+
+  async getTeamsByClient(clientId: number): Promise<Team[]> {
+    return await db.select().from(teams).where(eq(teams.clientId, clientId));
+  }
+
+  async getTeam(id: number): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team || undefined;
+  }
+
+  async createTeam(insertTeam: InsertTeam): Promise<Team> {
+    const [team] = await db
+      .insert(teams)
+      .values(insertTeam)
+      .returning();
+    return team;
+  }
+
+  async getTranscript(id: number): Promise<Transcript | undefined> {
+    const [transcript] = await db.select().from(transcripts).where(eq(transcripts.id, id));
+    return transcript || undefined;
+  }
+
+  async createTranscript(insertTranscript: InsertTranscript): Promise<Transcript> {
+    const [transcript] = await db
+      .insert(transcripts)
+      .values(insertTranscript)
+      .returning();
+    return transcript;
+  }
+
+  async getBrds(): Promise<Brd[]> {
+    return await db.select().from(brds).orderBy(desc(brds.generatedAt));
+  }
+
+  async getBrd(id: number): Promise<Brd | undefined> {
+    const [brd] = await db.select().from(brds).where(eq(brds.id, id));
+    return brd || undefined;
+  }
+
+  async createBrd(insertBrd: InsertBrd): Promise<Brd> {
+    const [brd] = await db
+      .insert(brds)
+      .values({
+        ...insertBrd,
+        content: insertBrd.content || {},
+        status: insertBrd.status || "generating",
+      })
+      .returning();
+    return brd;
+  }
+
+  async updateBrdStatus(id: number, status: string, content?: any): Promise<Brd | undefined> {
+    const updateData: any = { status };
+    if (content) {
+      updateData.content = content;
+    }
+    
+    const [brd] = await db
+      .update(brds)
+      .set(updateData)
+      .where(eq(brds.id, id))
+      .returning();
+    return brd || undefined;
+  }
+}
+
+// Use database storage instead of memory storage
+export const storage = new DatabaseStorage();
