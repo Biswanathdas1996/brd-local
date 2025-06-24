@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CheckCircle, AlertTriangle, Info, Clock, User } from "lucide-react";
 
 interface BrdDisplayProps {
   brd: any;
@@ -45,6 +47,28 @@ export default function BrdDisplay({ brd }: BrdDisplayProps) {
 
   return (
     <div className="prose max-w-none space-y-6">
+      {/* Table of Contents */}
+      {content.tableOfContents && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="w-5 h-5 text-blue-600" />
+              Table of Contents
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {content.tableOfContents.map((item: any, index: number) => (
+                <div key={index} className="flex justify-between items-center py-1 border-b border-gray-100">
+                  <span className="text-gray-700">{item.section}</span>
+                  <span className="text-gray-500">Page {item.pageNumber}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Executive Summary */}
       <div>
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Executive Summary</h3>

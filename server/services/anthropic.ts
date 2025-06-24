@@ -76,16 +76,22 @@ You will receive transcript content along with context about the process area, t
 5. Assumptions - Key assumptions made during analysis
 6. Constraints - Technical or business limitations
 7. Risk Mitigation - Potential risks and mitigation strategies
+8. Table of Contents - Section listing with page numbers
+9. RACI Matrix - Responsibility assignment matrix
+10. Changelog - Document version history
 
 Format your response as valid JSON with the structure:
 {
+  "tableOfContents": [{"section": "Executive Summary", "pageNumber": 1}, {"section": "Functional Requirements", "pageNumber": 2}],
   "executiveSummary": "string",
   "functionalRequirements": [{"id": "FR-001", "title": "string", "description": "string", "priority": "High|Medium|Low", "complexity": "High|Medium|Low"}],
   "nonFunctionalRequirements": [{"id": "NFR-001", "title": "string", "description": "string"}],
   "integrationRequirements": [{"id": "INT-001", "title": "string", "description": "string"}],
+  "raciMatrix": [{"task": "Requirements Analysis", "responsible": "Business Analyst", "accountable": "Project Manager", "consulted": "Subject Matter Expert", "informed": "Stakeholders"}],
   "assumptions": ["string"],
   "constraints": ["string"],
-  "riskMitigation": ["string"]
+  "riskMitigation": ["string"],
+  "changelog": [{"version": "1.0", "date": "2024-06-24", "author": "Business Analyst", "changes": "Initial version of BRD"}]
 }
 
 Ensure all requirements are:
@@ -138,6 +144,58 @@ Generate a detailed BRD based on this information. Focus on extracting concrete 
     // Validate the response structure
     if (!brdContent.executiveSummary || !Array.isArray(brdContent.functionalRequirements)) {
       throw new Error('Invalid BRD structure returned from AI');
+    }
+
+    // Ensure all new fields exist with defaults if missing
+    if (!brdContent.tableOfContents) {
+      brdContent.tableOfContents = [
+        { section: "Executive Summary", pageNumber: 1 },
+        { section: "Functional Requirements", pageNumber: 2 },
+        { section: "Non-Functional Requirements", pageNumber: 3 },
+        { section: "Integration Requirements", pageNumber: 4 },
+        { section: "RACI Matrix", pageNumber: 5 },
+        { section: "Assumptions", pageNumber: 6 },
+        { section: "Constraints", pageNumber: 7 },
+        { section: "Risk Mitigation", pageNumber: 8 },
+        { section: "Changelog", pageNumber: 9 }
+      ];
+    }
+
+    if (!brdContent.raciMatrix) {
+      brdContent.raciMatrix = [
+        {
+          task: "Requirements Analysis",
+          responsible: "Business Analyst",
+          accountable: "Project Manager",
+          consulted: "Subject Matter Expert",
+          informed: "Stakeholders"
+        },
+        {
+          task: "Solution Design",
+          responsible: "Solution Architect",
+          accountable: "Technical Lead",
+          consulted: "Business Analyst",
+          informed: "Development Team"
+        },
+        {
+          task: "Implementation",
+          responsible: "Development Team",
+          accountable: "Technical Lead",
+          consulted: "Solution Architect",
+          informed: "Project Manager"
+        }
+      ];
+    }
+
+    if (!brdContent.changelog) {
+      brdContent.changelog = [
+        {
+          version: "1.0",
+          date: new Date().toISOString().split('T')[0],
+          author: "Business Analyst",
+          changes: "Initial version of Business Requirements Document"
+        }
+      ];
     }
 
     return brdContent;
