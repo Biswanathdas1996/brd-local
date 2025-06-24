@@ -109,7 +109,14 @@ Generate a detailed BRD based on this information. Focus on extracting concrete 
       throw new Error('Unexpected response type from Anthropic API');
     }
 
-    const brdContent = JSON.parse(content.text) as BrdContent;
+    // Extract JSON from markdown code blocks if present
+    let jsonText = content.text;
+    const jsonMatch = content.text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
+    
+    const brdContent = JSON.parse(jsonText) as BrdContent;
     
     // Validate the response structure
     if (!brdContent.executiveSummary || !Array.isArray(brdContent.functionalRequirements)) {

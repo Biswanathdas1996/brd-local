@@ -4,7 +4,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { FileText, User, Upload, Wand2, Download, RefreshCw, Clock, CheckCircle, XCircle } from "lucide-react";
+import { FileText, User, Upload, Wand2, Download, RefreshCw, Clock, CheckCircle, XCircle, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
