@@ -1,16 +1,25 @@
 import { db } from "./db";
-import { clients, teams } from "@shared/schema";
+import { clients, teams, brds, transcripts } from "@shared/schema";
 
 export async function seedDatabase() {
   try {
     // Check if Indian banking data already exists
     const existingClients = await db.select().from(clients);
-    if (existingClients.length >= 5) {
+    const indianBanks = existingClients.filter(c => 
+      c.name.includes("SBI") || 
+      c.name.includes("State Bank of India") || 
+      c.name.includes("HDFC") ||
+      c.name.includes("ICICI")
+    );
+    
+    if (indianBanks.length > 0) {
       console.log("Indian banking data already seeded");
       return;
     }
     
-    // Clear existing non-Indian data if any
+    // Clear all existing data in proper order to avoid foreign key constraints
+    await db.delete(brds);
+    await db.delete(transcripts);
     await db.delete(teams);
     await db.delete(clients);
     console.log("Cleared existing data for Indian banking context");
