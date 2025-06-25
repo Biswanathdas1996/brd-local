@@ -74,10 +74,11 @@ export default function BrdDisplay({ brd, onRequirementUpdate }: BrdDisplayProps
           description: "Requirement updated successfully",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Save requirement error:', error);
       toast({
-        title: "Error",
-        description: "Failed to update requirement",
+        title: "Error", 
+        description: error.message || "Failed to update requirement",
         variant: "destructive",
       });
     }

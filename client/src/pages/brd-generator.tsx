@@ -251,51 +251,162 @@ export default function BrdGenerator() {
   const handleDownload = () => {
     if (!currentBrd) return;
     
-    const content = `# Business Requirements Document
-
-## Executive Summary
-${currentBrd.content.executiveSummary}
-
-## Functional Requirements
-${currentBrd.content.functionalRequirements.map((req: any) => 
-  `### ${req.id}: ${req.title}
-${req.description}
-**Priority:** ${req.priority} | **Complexity:** ${req.complexity}`
-).join('\n\n')}
-
-## Non-Functional Requirements
-${currentBrd.content.nonFunctionalRequirements.map((req: any) => 
-  `### ${req.id}: ${req.title}
-${req.description}`
-).join('\n\n')}
-
-## Integration Requirements
-${currentBrd.content.integrationRequirements.map((req: any) => 
-  `### ${req.id}: ${req.title}
-${req.description}`
-).join('\n\n')}
-
-## Assumptions
-${currentBrd.content.assumptions.map((assumption: string) => `- ${assumption}`).join('\n')}
-
-## Constraints
-${currentBrd.content.constraints.map((constraint: string) => `- ${constraint}`).join('\n')}
-
-## Risk Mitigation
-${currentBrd.content.riskMitigation.map((risk: string) => `- ${risk}`).join('\n')}
-
----
-Generated on: ${new Date(currentBrd.generatedAt).toLocaleString()}
-Process Area: ${processAreaLabels[currentBrd.processArea as keyof typeof processAreaLabels]}
-Target System: ${targetSystemLabels[currentBrd.targetSystem as keyof typeof targetSystemLabels]}`;
-
-    const blob = new Blob([content], { type: 'text/markdown' });
+    // Generate Word document content
+    const content = generateWordDocument(currentBrd);
+    const blob = new Blob([content], { 
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `BRD_${currentBrd.id}_${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `BRD_${currentBrd.id}_${new Date().toISOString().split('T')[0]}.docx`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const generateWordDocument = (brd: any) => {
+    // Generate HTML content that can be saved as Word document
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Business Requirements Document</title>
+          <style>
+            body { font-family: Calibri, Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            h1 { color: #1f4e79; border-bottom: 3px solid #1f4e79; padding-bottom: 10px; }
+            h2 { color: #2f5f8f; margin-top: 30px; margin-bottom: 15px; }
+            h3 { color: #4f7fbf; margin-top: 20px; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .priority-high { background-color: #ffebee; }
+            .priority-medium { background-color: #fff3e0; }
+            .priority-low { background-color: #e8f5e8; }
+            .toc-item { margin: 5px 0; display: flex; justify-content: space-between; }
+            .changelog-entry { border-left: 4px solid #4CAF50; padding-left: 15px; margin: 10px 0; }
+          </style>
+        </head>
+        <body>
+          <h1>Business Requirements Document</h1>
+          <p><strong>Generated on:</strong> ${new Date(brd.generatedAt).toLocaleString()}</p>
+          <p><strong>Process Area:</strong> ${processAreaLabels[brd.processArea as keyof typeof processAreaLabels]}</p>
+          <p><strong>Target System:</strong> ${targetSystemLabels[brd.targetSystem as keyof typeof targetSystemLabels]}</p>
+          
+          ${brd.content.tableOfContents ? `
+          <h2>Table of Contents</h2>
+          ${brd.content.tableOfContents.map((item: any) => 
+            `<div class="toc-item"><span>${item.section}</span><span>Page ${item.pageNumber}</span></div>`
+          ).join('')}
+          ` : ''}
+          
+          <h2>Executive Summary</h2>
+          <p>${brd.content.executiveSummary}</p>
+          
+          <h2>Functional Requirements</h2>
+          <table>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Priority</th>
+              <th>Complexity</th>
+            </tr>
+            ${brd.content.functionalRequirements?.map((req: any) => `
+              <tr class="priority-${req.priority.toLowerCase()}">
+                <td>${req.id}</td>
+                <td>${req.title}</td>
+                <td>${req.description}</td>
+                <td>${req.priority}</td>
+                <td>${req.complexity}</td>
+              </tr>
+            `).join('') || ''}
+          </table>
+          
+          <h2>Non-Functional Requirements</h2>
+          <table>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+            </tr>
+            ${brd.content.nonFunctionalRequirements?.map((req: any) => `
+              <tr>
+                <td>${req.id}</td>
+                <td>${req.title}</td>
+                <td>${req.description}</td>
+              </tr>
+            `).join('') || ''}
+          </table>
+          
+          <h2>Integration Requirements</h2>
+          <table>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+            </tr>
+            ${brd.content.integrationRequirements?.map((req: any) => `
+              <tr>
+                <td>${req.id}</td>
+                <td>${req.title}</td>
+                <td>${req.description}</td>
+              </tr>
+            `).join('') || ''}
+          </table>
+          
+          ${brd.content.raciMatrix ? `
+          <h2>RACI Matrix</h2>
+          <table>
+            <tr>
+              <th>Task</th>
+              <th>Responsible</th>
+              <th>Accountable</th>
+              <th>Consulted</th>
+              <th>Informed</th>
+            </tr>
+            ${brd.content.raciMatrix.map((item: any) => `
+              <tr>
+                <td>${item.task}</td>
+                <td>${item.responsible}</td>
+                <td>${item.accountable}</td>
+                <td>${item.consulted}</td>
+                <td>${item.informed}</td>
+              </tr>
+            `).join('')}
+          </table>
+          ` : ''}
+          
+          <h2>Assumptions</h2>
+          <ul>
+            ${brd.content.assumptions?.map((assumption: string) => `<li>${assumption}</li>`).join('') || ''}
+          </ul>
+          
+          <h2>Constraints</h2>
+          <ul>
+            ${brd.content.constraints?.map((constraint: string) => `<li>${constraint}</li>`).join('') || ''}
+          </ul>
+          
+          <h2>Risk Mitigation</h2>
+          <ul>
+            ${brd.content.riskMitigation?.map((risk: string) => `<li>${risk}</li>`).join('') || ''}
+          </ul>
+          
+          ${brd.content.changelog ? `
+          <h2>Changelog</h2>
+          ${brd.content.changelog.map((entry: any) => `
+            <div class="changelog-entry">
+              <strong>Version ${entry.version}</strong> - ${entry.date} - ${entry.author}<br>
+              ${entry.changes}
+            </div>
+          `).join('')}
+          ` : ''}
+        </body>
+      </html>
+    `;
+    
+    return htmlContent;
   };
 
   return (
