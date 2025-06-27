@@ -16,6 +16,7 @@ import {
   XCircle,
   Eye,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -193,6 +194,33 @@ export default function BrdGenerator() {
       toast({
         title: "Generation Failed",
         description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete BRD mutation
+  const deleteBrdMutation = useMutation({
+    mutationFn: async (brdId: number) => {
+      const response = await fetch(`/api/brd/${brdId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete BRD");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/brds"] });
+      toast({
+        title: "BRD Deleted",
+        description: "The BRD has been successfully deleted.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete BRD. Please try again.",
         variant: "destructive",
       });
     },
@@ -918,8 +946,8 @@ export default function BrdGenerator() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {brd.status === "completed" && (
-                          <div className="flex space-x-2">
+                        <div className="flex space-x-2">
+                          {brd.status === "completed" && (
                             <Button
                               variant="link"
                               size="sm"
@@ -928,8 +956,21 @@ export default function BrdGenerator() {
                             >
                               View
                             </Button>
-                          </div>
-                        )}
+                          )}
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm("Are you sure you want to delete this BRD? This action cannot be undone.")) {
+                                deleteBrdMutation.mutate(brd.id);
+                              }
+                            }}
+                            className="text-red-600 p-0 hover:text-red-800"
+                            disabled={deleteBrdMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -27,6 +27,7 @@ export interface IStorage {
   getBrd(id: number): Promise<Brd | undefined>;
   createBrd(brd: InsertBrd): Promise<Brd>;
   updateBrdStatus(id: number, status: string, content?: any): Promise<Brd | undefined>;
+  deleteBrd(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -186,6 +187,10 @@ export class MemStorage implements IStorage {
     }
     return undefined;
   }
+
+  async deleteBrd(id: number): Promise<boolean> {
+    return this.brds.delete(id);
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -273,6 +278,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(brds.id, id))
       .returning();
     return brd || undefined;
+  }
+
+  async deleteBrd(id: number): Promise<boolean> {
+    const result = await db
+      .delete(brds)
+      .where(eq(brds.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 

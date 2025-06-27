@@ -295,6 +295,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete BRD
+  app.delete("/api/brd/:id", async (req, res) => {
+    try {
+      const brdId = parseInt(req.params.id);
+      if (isNaN(brdId)) {
+        return res.status(400).json({ message: "Invalid BRD ID" });
+      }
+
+      const success = await storage.deleteBrd(brdId);
+      if (!success) {
+        return res.status(404).json({ message: "BRD not found" });
+      }
+
+      res.json({ message: "BRD deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete BRD" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
