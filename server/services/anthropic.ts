@@ -1,17 +1,16 @@
-import Anthropic from '@anthropic-ai/sdk';
-
 /*
-The newest Anthropic model is "claude-sonnet-4-20250514", not "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022" nor "claude-3-sonnet-20240229". 
-If the user doesn't specify a model, always prefer using "claude-sonnet-4-20250514" as it is the latest model.
+<important_code_snippet_instructions>
+This service integrates with PwC's internal GenAI shared service API instead of external Anthropic API.
+Using bedrock.anthropic.claude-sonnet-4 model through PwC's secure internal infrastructure.
+API endpoint: https://genai-sharedservice-americas.pwc.com/completions
+Authentication: Dual header approach with API-Key and Bearer token
+</important_code_snippet_instructions>
 */
 
 // <important_do_not_delete>
-const DEFAULT_MODEL_STR = "claude-sonnet-4-20250514";
+const DEFAULT_MODEL_STR = "bedrock.anthropic.claude-sonnet-4";
+const PWC_GENAI_ENDPOINT = "https://genai-sharedservice-americas.pwc.com/completions";
 // </important_do_not_delete>
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY_ENV_VAR || "default_key",
-});
 
 export interface BrdRequest {
   transcriptContent: string;
@@ -62,6 +61,89 @@ export interface BrdContent {
     author: string;
     changes: string;
   }>;
+}
+
+interface PwcGenAIRequest {
+  model: string;
+  prompt: string;
+  presence_penalty?: number;
+  seed?: number;
+  stop?: string | null;
+  stream?: boolean;
+  stream_options?: any;
+  temperature?: number;
+  top_p?: number;
+}
+
+interface PwcGenAIResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: Array<{
+    finish_reason: string;
+    index: number;
+    text: string;
+    logprobs: any;
+  }>;
+  usage: {
+    completion_tokens: number;
+    prompt_tokens: number;
+    total_tokens: number;
+    completion_tokens_details?: any;
+    prompt_tokens_details?: any;
+    cache_creation_input_tokens?: number;
+    cache_read_input_tokens?: number;
+  };
+}
+
+async function callPwcGenAI(prompt: string, systemPrompt?: string): Promise<string> {
+  if (!process.env.PWC_GENAI_API_KEY) {
+    throw new Error("PWC_GENAI_API_KEY environment variable is required");
+  }
+
+  // Combine system and user prompts
+  const fullPrompt = systemPrompt ? `${systemPrompt}\n\nUser: ${prompt}` : prompt;
+
+  const requestBody: PwcGenAIRequest = {
+    model: DEFAULT_MODEL_STR,
+    prompt: fullPrompt,
+    presence_penalty: 0,
+    seed: 25,
+    stop: null,
+    stream: false,
+    stream_options: null,
+    temperature: 0.7,
+    top_p: 1
+  };
+
+  try {
+    const response = await fetch(PWC_GENAI_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'API-Key': process.env.PWC_GENAI_API_KEY,
+        'Authorization': `Bearer ${process.env.PWC_GENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      throw new Error(`PwC GenAI API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: PwcGenAIResponse = await response.json();
+    
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error('No response choices returned from PwC GenAI API');
+    }
+
+    return data.choices[0].text;
+  } catch (error: any) {
+    console.error('Error calling PwC GenAI API:', error);
+    throw new Error(`Failed to call PwC GenAI service: ${error.message}`);
+  }
 }
 
 export async function generateRequirementEnhancements(requirement: any, context: any): Promise<any> {
@@ -118,7 +200,7 @@ Format your response as JSON:
     }
 
     return JSON.parse(jsonText);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating requirement enhancements:', error);
     throw new Error(`Failed to generate enhancement suggestions: ${error.message}`);
   }
@@ -129,39 +211,32 @@ export async function generateBrd(request: BrdRequest): Promise<BrdContent> {
 
 You will receive transcript content along with context about the process area, target system, client, and team. Generate a structured BRD that includes:
 
-1. Executive Summary - High-level overview of the requirements
-2. Functional Requirements - Specific features and capabilities needed
-3. Non-Functional Requirements - Performance, security, scalability requirements
-4. Integration Requirements - How the solution integrates with existing systems
-5. Assumptions - Key assumptions made during analysis
-6. Constraints - Technical or business limitations
-7. Risk Mitigation - Potential risks and mitigation strategies
-8. Table of Contents - Section listing with page numbers
-9. RACI Matrix - Responsibility assignment matrix
-10. Changelog - Document version history
+1. **Table of Contents** - A structured outline with sections and page numbers
+2. **Executive Summary** - High-level overview of business objectives and proposed solution
+3. **Functional Requirements** - Detailed functional requirements with IDs, titles, descriptions, priority levels (High/Medium/Low), and complexity ratings (High/Medium/Low)
+4. **Non-Functional Requirements** - Performance, security, scalability, and usability requirements
+5. **Integration Requirements** - System integration and data flow requirements
+6. **RACI Matrix** - Responsibility assignment matrix for key tasks and deliverables
+7. **Assumptions** - Key assumptions made during requirements gathering
+8. **Constraints** - Technical, business, and regulatory constraints
+9. **Risk Mitigation** - Identified risks and mitigation strategies
+10. **Changelog** - Version control and change tracking
 
-Format your response as valid JSON with the structure:
-{
-  "tableOfContents": [{"section": "Executive Summary", "pageNumber": 1}, {"section": "Functional Requirements", "pageNumber": 2}],
-  "executiveSummary": "string",
-  "functionalRequirements": [{"id": "FR-001", "title": "string", "description": "string", "priority": "High|Medium|Low", "complexity": "High|Medium|Low"}],
-  "nonFunctionalRequirements": [{"id": "NFR-001", "title": "string", "description": "string"}],
-  "integrationRequirements": [{"id": "INT-001", "title": "string", "description": "string"}],
-  "raciMatrix": [{"task": "Requirements Analysis", "responsible": "Business Analyst", "accountable": "Project Manager", "consulted": "Subject Matter Expert", "informed": "Stakeholders"}],
-  "assumptions": ["string"],
-  "constraints": ["string"],
-  "riskMitigation": ["string"],
-  "changelog": [{"version": "1.0", "date": "2024-06-24", "author": "Business Analyst", "changes": "Initial version of BRD"}]
-}
+Focus specifically on Indian banking context with:
+- RBI (Reserve Bank of India) regulatory compliance
+- Digital India initiatives
+- UPI and payment system integration
+- KYC/AML requirements
+- Core banking system modernization
+- Digital banking transformation
 
 Ensure all requirements are:
 - Specific and measurable
-- Relevant to the process area and target system
 - Technically feasible
-- Aligned with financial services best practices
-- Compliant with regulatory requirements where applicable`;
+- Compliant with Indian banking regulations
+- Aligned with digital transformation goals`;
 
-  const userPrompt = `Please analyze the following transcript and generate a comprehensive BRD:
+  const userPrompt = `Based on the following call transcript and context, generate a comprehensive Business Requirements Document:
 
 **Context:**
 - Client: ${request.clientName}
@@ -174,92 +249,77 @@ Ensure all requirements are:
 **Transcript Content:**
 ${request.transcriptContent}
 
-Generate a detailed BRD based on this information. Focus on extracting concrete requirements from the transcript while ensuring they align with the specified process area and target system capabilities.`;
+Please provide the response in the following JSON format:
+{
+  "tableOfContents": [
+    {"section": "Executive Summary", "pageNumber": 1},
+    {"section": "Functional Requirements", "pageNumber": 2}
+  ],
+  "executiveSummary": "...",
+  "functionalRequirements": [
+    {
+      "id": "FR-001",
+      "title": "...",
+      "description": "...",
+      "priority": "High|Medium|Low",
+      "complexity": "High|Medium|Low"
+    }
+  ],
+  "nonFunctionalRequirements": [
+    {
+      "id": "NFR-001",
+      "title": "...",
+      "description": "..."
+    }
+  ],
+  "integrationRequirements": [
+    {
+      "id": "IR-001",
+      "title": "...",
+      "description": "..."
+    }
+  ],
+  "raciMatrix": [
+    {
+      "task": "...",
+      "responsible": "...",
+      "accountable": "...",
+      "consulted": "...",
+      "informed": "..."
+    }
+  ],
+  "assumptions": ["...", "..."],
+  "constraints": ["...", "..."],
+  "riskMitigation": ["...", "..."],
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "${new Date().toISOString().split('T')[0]}",
+      "author": "AI Assistant",
+      "changes": "Initial BRD generation from transcript analysis"
+    }
+  ]
+}`;
 
   try {
-    const response = await anthropic.messages.create({
-      // "claude-sonnet-4-20250514"
-      model: DEFAULT_MODEL_STR,
-      system: systemPrompt,
-      max_tokens: 4000,
-      messages: [
-        { role: 'user', content: userPrompt }
-      ],
-    });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Anthropic API');
-    }
+    const responseText = await callPwcGenAI(userPrompt, systemPrompt);
 
     // Extract JSON from markdown code blocks if present
-    let jsonText = content.text;
-    const jsonMatch = content.text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    let jsonText = responseText;
+    const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (jsonMatch) {
       jsonText = jsonMatch[1];
     }
+
+    const brdData = JSON.parse(jsonText);
     
-    const brdContent = JSON.parse(jsonText) as BrdContent;
-    
-    // Validate the response structure
-    if (!brdContent.executiveSummary || !Array.isArray(brdContent.functionalRequirements)) {
-      throw new Error('Invalid BRD structure returned from AI');
+    // Validate the structure
+    if (!brdData.functionalRequirements || !Array.isArray(brdData.functionalRequirements)) {
+      throw new Error('Invalid BRD structure: missing or invalid functional requirements');
     }
 
-    // Ensure all new fields exist with defaults if missing
-    if (!brdContent.tableOfContents) {
-      brdContent.tableOfContents = [
-        { section: "Executive Summary", pageNumber: 1 },
-        { section: "Functional Requirements", pageNumber: 2 },
-        { section: "Non-Functional Requirements", pageNumber: 3 },
-        { section: "Integration Requirements", pageNumber: 4 },
-        { section: "RACI Matrix", pageNumber: 5 },
-        { section: "Assumptions", pageNumber: 6 },
-        { section: "Constraints", pageNumber: 7 },
-        { section: "Risk Mitigation", pageNumber: 8 },
-        { section: "Changelog", pageNumber: 9 }
-      ];
-    }
-
-    if (!brdContent.raciMatrix) {
-      brdContent.raciMatrix = [
-        {
-          task: "Requirements Analysis",
-          responsible: "Business Analyst",
-          accountable: "Project Manager",
-          consulted: "Subject Matter Expert",
-          informed: "Stakeholders"
-        },
-        {
-          task: "Solution Design",
-          responsible: "Solution Architect",
-          accountable: "Technical Lead",
-          consulted: "Business Analyst",
-          informed: "Development Team"
-        },
-        {
-          task: "Implementation",
-          responsible: "Development Team",
-          accountable: "Technical Lead",
-          consulted: "Solution Architect",
-          informed: "Project Manager"
-        }
-      ];
-    }
-
-    if (!brdContent.changelog) {
-      brdContent.changelog = [
-        {
-          version: "1.0",
-          date: new Date().toISOString().split('T')[0],
-          author: "Business Analyst",
-          changes: "Initial version of Business Requirements Document"
-        }
-      ];
-    }
-
-    return brdContent;
-  } catch (error) {
+    return brdData as BrdContent;
+  } catch (error: any) {
     console.error('Error generating BRD:', error);
     throw new Error(`Failed to generate BRD: ${error.message}`);
   }
