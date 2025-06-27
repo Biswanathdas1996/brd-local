@@ -276,6 +276,35 @@ export default function BrdGenerator() {
     generateBrdMutation.mutate(data);
   };
 
+  // Handle requirement update
+  const handleRequirementUpdate = async (requirementId: string, updatedRequirement: any) => {
+    if (!currentBrd) return;
+    
+    try {
+      const response = await fetch(`/api/brd/${currentBrd.id}/requirement/${requirementId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedRequirement),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update requirement");
+      }
+
+      const result = await response.json();
+      
+      // Update the current BRD with the new content
+      setCurrentBrd(result.brd);
+      
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["/api/brds"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/brd", currentBrd.id] });
+      
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to update requirement");
+    }
+  };
+
   const handleTranscriptUploaded = (transcript: any, suggestions?: any) => {
     setUploadedTranscript(transcript);
     form.setValue("transcriptId", transcript.id.toString());
@@ -878,7 +907,7 @@ export default function BrdGenerator() {
               </div>
             </CardHeader>
             <CardContent>
-              <BrdDisplay brd={currentBrd} />
+              <BrdDisplay brd={currentBrd} onRequirementUpdate={handleRequirementUpdate} />
             </CardContent>
           </Card>
         )}
