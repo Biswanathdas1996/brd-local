@@ -156,7 +156,10 @@ async function callPwcGenAI(
 
 // Helper function to fix truncated JSON responses
 function fixTruncatedJson(truncatedJson: string): string {
-  console.log('Attempting to fix truncated JSON...');
+  console.log('=== TRUNCATED JSON FIX ATTEMPT ===');
+  console.log('Input JSON length:', truncatedJson.length);
+  console.log('Input JSON starts with:', JSON.stringify(truncatedJson.substring(0, 100)));
+  console.log('Input JSON ends with:', JSON.stringify(truncatedJson.slice(-100)));
   
   // Find the last complete object/array
   let lastCompleteIndex = -1;
@@ -232,7 +235,10 @@ function fixTruncatedJson(truncatedJson: string): string {
 }`;
     
     const fixedJson = baseJson + closingStructure;
-    console.log('Successfully fixed truncated JSON with functional requirements');
+    console.log('=== JSON FIX COMPLETE ===');
+    console.log('Fixed JSON length:', fixedJson.length);
+    console.log('Base JSON used:', JSON.stringify(baseJson.slice(-100)));
+    console.log('Closing structure added:', JSON.stringify(closingStructure.substring(0, 100)));
     return fixedJson;
   }
   
@@ -495,10 +501,31 @@ Please provide a concise response in the following JSON format (keep description
     let brdData;
     try {
       brdData = JSON.parse(jsonText);
+      console.log('JSON parsing successful - no truncation detected');
     } catch (parseError) {
-      console.log('JSON parsing failed, attempting to fix truncated response...');
-      const fixedJson = fixTruncatedJson(jsonText);
-      brdData = JSON.parse(fixedJson);
+      console.log('=== JSON PARSING ERROR DETAILS ===');
+      console.log('Original error:', parseError.message);
+      console.log('Error position:', parseError.message.match(/position (\d+)/)?.[1] || 'unknown');
+      console.log('JSON length:', jsonText.length);
+      console.log('JSON substring around error:');
+      const errorPos = parseInt(parseError.message.match(/position (\d+)/)?.[1] || '0');
+      const start = Math.max(0, errorPos - 50);
+      const end = Math.min(jsonText.length, errorPos + 50);
+      console.log(`Characters ${start}-${end}:`, JSON.stringify(jsonText.substring(start, end)));
+      console.log('Last 100 characters of JSON:', JSON.stringify(jsonText.slice(-100)));
+      console.log('=== ATTEMPTING JSON FIX ===');
+      
+      try {
+        const fixedJson = fixTruncatedJson(jsonText);
+        console.log('Fixed JSON length:', fixedJson.length);
+        console.log('Fixed JSON last 100 chars:', JSON.stringify(fixedJson.slice(-100)));
+        brdData = JSON.parse(fixedJson);
+        console.log('JSON fix successful!');
+      } catch (fixError) {
+        console.log('JSON fix failed:', fixError.message);
+        console.log('Fix error position:', fixError.message.match(/position (\d+)/)?.[1] || 'unknown');
+        throw fixError;
+      }
     }
 
     // Validate the structure
