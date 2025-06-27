@@ -1,7 +1,7 @@
 /*
 <important_code_snippet_instructions>
 This service integrates with PwC's internal GenAI shared service API.
-Using bedrock.anthropic.claude-sonnet-4 model through PwC's secure internal infrastructure.
+Using vertex_ai.gemini-2.0-flash model through PwC's secure internal infrastructure.
 API endpoint: https://genai-sharedservice-americas.pwc.com/completions
 Authentication: Dual header approach with API-Key and Bearer token
 </important_code_snippet_instructions>
