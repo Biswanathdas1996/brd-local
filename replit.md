@@ -60,8 +60,11 @@ This is a Business Requirements Document (BRD) generator application built for I
 ## External Dependencies
 
 ### AI Services
-- **Anthropic Claude API**: Primary AI service for BRD generation using claude-sonnet-4-20250514 model
-- **API Key Management**: Environment variable-based configuration
+- **Anthropic Claude API**: Primary AI service for BRD generation and requirement enhancement
+- **Model**: claude-sonnet-4-20250514 (Claude 4.0 Sonnet)
+- **Functions**: BRD generation from transcripts, functional requirement enhancement suggestions
+- **API Key Management**: Environment variable-based configuration (ANTHROPIC_API_KEY)
+- **Documentation**: Comprehensive LLM services documentation available in LLM_Services_Documentation.md
 
 ### Database
 - **PostgreSQL**: Primary database with Neon serverless support
@@ -89,6 +92,16 @@ This is a Business Requirements Document (BRD) generator application built for I
 - **File Uploads**: Local uploads directory with 10MB size limit
 
 ## Recent Changes
+
+June 27, 2025:
+- Enhanced BRD generation with Table of Contents, RACI Matrix, and Changelog sections
+- Added Salesforce Financial Services Cloud, Microsoft Dynamics 365, and Custom Application Development to target systems
+- Implemented inline editing functionality for functional requirements with save/cancel operations
+- Added AI-powered requirement enhancement suggestions with apply enhanced version feature
+- Fixed download format to generate proper Word documents (.docx) instead of markdown files
+- Created comprehensive LLM Services Documentation outlining Anthropic Claude integration
+- Improved requirement update API with better error handling and content parsing
+- Added query invalidation for real-time BRD data refresh after edits
 
 June 24, 2025:
 - Initial BRD Generator application setup
