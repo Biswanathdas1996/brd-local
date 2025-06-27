@@ -108,23 +108,11 @@ Format your response as JSON:
 }`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: DEFAULT_MODEL_STR,
-      system: systemPrompt,
-      max_tokens: 2000,
-      messages: [
-        { role: 'user', content: userPrompt }
-      ],
-    });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Anthropic API');
-    }
+    const responseText = await callPwcGenAI(userPrompt, systemPrompt);
 
     // Extract JSON from markdown code blocks if present
-    let jsonText = content.text;
-    const jsonMatch = content.text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    let jsonText = responseText;
+    const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (jsonMatch) {
       jsonText = jsonMatch[1];
     }

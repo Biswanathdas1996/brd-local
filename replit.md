@@ -53,17 +53,19 @@ This is a Business Requirements Document (BRD) generator application built for I
 1. **File Upload**: Users upload transcript files (.txt, .pdf, .docx)
 2. **Content Extraction**: Backend processes files and extracts text content
 3. **Configuration**: Users select client, team, process area, and target system
-4. **AI Processing**: Transcript content is sent to Anthropic Claude for BRD generation
+4. **AI Processing**: Transcript content is sent to PwC GenAI service for BRD generation
 5. **Result Storage**: Generated BRDs are stored with status tracking
 6. **Display**: Structured BRD content is presented to users with export options
 
 ## External Dependencies
 
 ### AI Services
-- **Anthropic Claude API**: Primary AI service for BRD generation and requirement enhancement
-- **Model**: claude-sonnet-4-20250514 (Claude 4.0 Sonnet)
+- **PwC GenAI Shared Service**: Internal AI service for BRD generation and requirement enhancement
+- **Model**: bedrock.anthropic.claude-sonnet-4 (Claude 4.0 Sonnet via AWS Bedrock)
+- **Endpoint**: https://genai-sharedservice-americas.pwc.com/completions
 - **Functions**: BRD generation from transcripts, functional requirement enhancement suggestions
-- **API Key Management**: Environment variable-based configuration (ANTHROPIC_API_KEY)
+- **API Key Management**: Environment variable-based configuration (PWC_GENAI_API_KEY)
+- **Security**: All processing within PwC's controlled infrastructure
 - **Documentation**: Comprehensive LLM services documentation available in LLM_Services_Documentation.md
 
 ### Database
@@ -88,7 +90,7 @@ This is a Business Requirements Document (BRD) generator application built for I
 
 ### Environment Configuration
 - **Database**: `DATABASE_URL` environment variable required
-- **AI Service**: `ANTHROPIC_API_KEY` environment variable required
+- **AI Service**: `PWC_GENAI_API_KEY` environment variable required
 - **File Uploads**: Local uploads directory with 10MB size limit
 
 ## Recent Changes
@@ -99,7 +101,10 @@ June 27, 2025:
 - Implemented inline editing functionality for functional requirements with save/cancel operations
 - Added AI-powered requirement enhancement suggestions with apply enhanced version feature
 - Fixed download format to generate proper Word documents (.docx) instead of markdown files
-- Created comprehensive LLM Services Documentation outlining Anthropic Claude integration
+- **Refactored LLM integration**: Migrated from external Anthropic API to PwC's internal GenAI shared service
+- Updated all AI service calls to use PwC's secure infrastructure (genai-sharedservice-americas.pwc.com)
+- Enhanced security and compliance by keeping all data processing within PwC's controlled environment
+- Updated comprehensive LLM Services Documentation for new PwC GenAI integration
 - Improved requirement update API with better error handling and content parsing
 - Added query invalidation for real-time BRD data refresh after edits
 

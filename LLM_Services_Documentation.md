@@ -6,12 +6,13 @@ This document outlines the Large Language Model (LLM) services integrated into t
 
 ## Primary LLM Service
 
-### Anthropic Claude API
+### PwC GenAI Shared Service
 
-**Service Provider**: Anthropic  
-**Model**: `claude-sonnet-4-20250514` (Claude 4.0 Sonnet)  
+**Service Provider**: PwC Internal GenAI Infrastructure  
+**Model**: `bedrock.anthropic.claude-sonnet-4` (Claude 4.0 Sonnet via AWS Bedrock)  
 **Integration Location**: `server/services/anthropic.ts`  
-**Authentication**: API Key-based authentication via `ANTHROPIC_API_KEY` environment variable
+**API Endpoint**: `https://genai-sharedservice-americas.pwc.com/completions`  
+**Authentication**: Dual header authentication with `API-Key` and `Authorization: Bearer` using `PWC_GENAI_API_KEY` environment variable
 
 #### Key Features Used:
 - **Text Analysis**: Processes call transcripts and extracts business requirements
@@ -130,25 +131,33 @@ interface BrdContent {
 
 **Environment Variables Required**:
 ```bash
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+PWC_GENAI_API_KEY=your_pwc_genai_api_key_here
 ```
 
-**SDK Integration**:
+**API Integration**:
 ```typescript
-import Anthropic from '@anthropic-ai/sdk';
+const PWC_GENAI_ENDPOINT = "https://genai-sharedservice-americas.pwc.com/completions";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const response = await fetch(PWC_GENAI_ENDPOINT, {
+  method: 'POST',
+  headers: {
+    'accept': 'application/json',
+    'API-Key': process.env.PWC_GENAI_API_KEY,
+    'Authorization': `Bearer ${process.env.PWC_GENAI_API_KEY}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(requestBody)
 });
 ```
 
 ### Error Handling
 
 **Common Error Scenarios**:
-1. **API Key Missing/Invalid**: Application fails to start, requires environment configuration
-2. **Rate Limiting**: Anthropic API rate limits handled with proper error responses
+1. **API Key Missing/Invalid**: Application fails to start, requires `PWC_GENAI_API_KEY` environment configuration
+2. **Rate Limiting**: PwC GenAI service rate limits handled with proper error responses
 3. **Content Parsing**: JSON extraction from Claude responses with fallback handling
-4. **Token Limits**: Large transcripts may exceed input limits
+4. **Network Connectivity**: PwC internal network connectivity requirements
+5. **Authentication**: Dual header authentication validation
 
 **Error Response Format**:
 ```typescript
@@ -208,10 +217,11 @@ const anthropic = new Anthropic({
 ## Security and Privacy
 
 ### Data Handling:
-- **API Communications**: HTTPS-encrypted
-- **Transcript Data**: Processed in-memory, not permanently stored by LLM service
+- **API Communications**: HTTPS-encrypted to PwC internal infrastructure
+- **Transcript Data**: Processed in-memory, remains within PwC security perimeter
 - **Generated Content**: Stored locally in PostgreSQL database
-- **API Keys**: Environment variable-based secure storage
+- **API Keys**: Environment variable-based secure storage for PwC GenAI access
+- **Data Residency**: All processing occurs within PwC's controlled environment
 
 ### Compliance Considerations:
 - Banking data sensitivity awareness
