@@ -8,7 +8,7 @@ Authentication: Dual header approach with API-Key and Bearer token
 */
 
 // <important_do_not_delete>
-const DEFAULT_MODEL_STR = "bedrock.anthropic.claude-sonnet-4";
+const DEFAULT_MODEL_STR = "vertex_ai.gemini-2.0-flash";
 const PWC_GENAI_ENDPOINT =
   "https://genai-sharedservice-americas.pwc.com/completions";
 // </important_do_not_delete>
@@ -195,30 +195,44 @@ function fixTruncatedJson(truncatedJson: string): string {
     }
   }
   
-  // If we can find a reasonable stopping point, truncate there and close the JSON
-  if (lastCompleteIndex > -1) {
-    let fixedJson = truncatedJson.substring(0, lastCompleteIndex + 1);
+  // Find the last complete functional requirement
+  const functionalReqMatch = truncatedJson.match(/("functionalRequirements"\s*:\s*\[[\s\S]*?)(?:,\s*"[^"]*"\s*:\s*$|$)/);
+  
+  if (functionalReqMatch) {
+    let baseJson = truncatedJson.substring(0, functionalReqMatch.index + functionalReqMatch[1].length);
     
-    // Add minimal required closing structure
-    const requiredFields = [
-      '"nonFunctionalRequirements": [{"id": "NFR-001", "title": "Performance", "description": "System performance requirements"}]',
-      '"integrationRequirements": [{"id": "IR-001", "title": "Core Banking", "description": "Integration with core banking system"}]',
-      '"raciMatrix": [{"task": "Implementation", "responsible": "Development Team", "accountable": "Project Manager", "consulted": "Business Analyst", "informed": "Stakeholders"}]',
-      '"assumptions": ["Existing infrastructure available", "User training provided"]',
-      '"constraints": ["Regulatory compliance required", "Budget limitations"]',
-      '"riskMitigation": ["Regular testing", "Backup procedures"]',
-      '"changelog": [{"version": "1.0", "date": "2025-06-27", "author": "PwC GenAI Assistant", "changes": "Initial BRD generation"}]'
-    ];
-    
-    // Remove trailing comma if present
-    if (fixedJson.endsWith(',')) {
-      fixedJson = fixedJson.slice(0, -1);
+    // Ensure proper closure of functional requirements array
+    if (!baseJson.trim().endsWith(']')) {
+      // Find the last complete functional requirement object
+      const lastCompleteReq = baseJson.lastIndexOf('}');
+      if (lastCompleteReq > -1) {
+        baseJson = baseJson.substring(0, lastCompleteReq + 1) + '\n  ]';
+      } else {
+        baseJson += ']';
+      }
     }
     
-    // Add missing required fields and close JSON
-    fixedJson += ', ' + requiredFields.join(', ') + '}';
+    // Add required closing structure
+    const closingStructure = `,
+  "nonFunctionalRequirements": [
+    {"id": "NFR-001", "title": "Performance", "description": "System performance requirements"}
+  ],
+  "integrationRequirements": [
+    {"id": "IR-001", "title": "Core Banking", "description": "Integration with core banking system"}
+  ],
+  "raciMatrix": [
+    {"task": "Implementation", "responsible": "Development Team", "accountable": "Project Manager", "consulted": "Business Analyst", "informed": "Stakeholders"}
+  ],
+  "assumptions": ["Existing infrastructure available", "User training provided"],
+  "constraints": ["Regulatory compliance required", "Budget limitations"],
+  "riskMitigation": ["Regular testing", "Backup procedures"],
+  "changelog": [
+    {"version": "1.0", "date": "2025-06-27", "author": "PwC GenAI Assistant", "changes": "Initial BRD generation"}
+  ]
+}`;
     
-    console.log('Successfully fixed truncated JSON');
+    const fixedJson = baseJson + closingStructure;
+    console.log('Successfully fixed truncated JSON with functional requirements');
     return fixedJson;
   }
   

@@ -9,7 +9,7 @@ This document outlines the Large Language Model (LLM) services integrated into t
 ### PwC GenAI Shared Service
 
 **Service Provider**: PwC Internal GenAI Infrastructure  
-**Model**: `bedrock.anthropic.claude-sonnet-4` (Claude 4.0 Sonnet via AWS Bedrock)  
+**Model**: `vertex_ai.gemini-2.0-flash` (Gemini 2.0 Flash via Google Vertex AI)  
 **Integration Location**: `server/services/pwc-genai.ts`  
 **API Endpoint**: `https://genai-sharedservice-americas.pwc.com/completions`  
 **Authentication**: Dual header authentication with `API-Key` and `Authorization: Bearer` using `PWC_GENAI_API_KEY` environment variable

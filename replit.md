@@ -61,7 +61,7 @@ This is a Business Requirements Document (BRD) generator application built for I
 
 ### AI Services
 - **PwC GenAI Shared Service**: Internal AI service for BRD generation and requirement enhancement
-- **Model**: bedrock.anthropic.claude-sonnet-4 (Claude 4.0 Sonnet via AWS Bedrock)
+- **Model**: vertex_ai.gemini-2.0-flash (Gemini 2.0 Flash via Google Vertex AI)
 - **Endpoint**: https://genai-sharedservice-americas.pwc.com/completions
 - **Functions**: BRD generation from transcripts, functional requirement enhancement suggestions
 - **API Key Management**: Environment variable-based configuration (PWC_GENAI_API_KEY)
