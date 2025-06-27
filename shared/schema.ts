@@ -29,7 +29,7 @@ export const brds = pgTable("brds", {
   id: serial("id").primaryKey(),
   clientId: integer("client_id").references(() => clients.id).notNull(),
   teamId: integer("team_id").references(() => teams.id).notNull(),
-  transcriptId: integer("transcript_id").references(() => transcripts.id).notNull(),
+  transcriptId: integer("transcript_id").references(() => transcripts.id),
   processArea: text("process_area").notNull(),
   targetSystem: text("target_system").notNull(),
   template: text("template").notNull().default("standard"),
@@ -58,8 +58,11 @@ export const insertBrdSchema = createInsertSchema(brds).omit({
   id: true,
   generatedAt: true,
   content: true,
+  transcriptId: true, // Remove required transcriptId from base schema
 }).extend({
   content: z.any().optional(),
+  transcriptId: z.number().optional(), // Make transcript ID optional
+  transcriptContent: z.string().optional(), // Allow direct transcript content
   processArea: z.enum([
     "account_opening",
     "loan_processing", 

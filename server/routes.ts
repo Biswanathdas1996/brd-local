@@ -197,15 +197,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Get related data for context
-      const [client, team, transcript] = await Promise.all([
+      const [client, team] = await Promise.all([
         storage.getClient(brdData.clientId),
         storage.getTeam(brdData.teamId),
-        storage.getTranscript(brdData.transcriptId),
       ]);
 
-      if (!client || !team || !transcript) {
+      if (!client || !team) {
         await storage.updateBrdStatus(brd.id, "failed");
-        return res.status(400).json({ message: "Invalid client, team, or transcript ID" });
+        return res.status(400).json({ message: "Invalid client or team ID" });
+      }
+
+      // Get transcript content - either from transcriptId or from transcriptContent
+      let transcriptContent = '';
+      if (brdData.transcriptId) {
+        const transcript = await storage.getTranscript(brdData.transcriptId);
+        if (!transcript) {
+          await storage.updateBrdStatus(brd.id, "failed");
+          return res.status(400).json({ message: "Invalid transcript ID" });
+        }
+        transcriptContent = transcript.content;
+      } else if ((brdData as any).transcriptContent) {
+        transcriptContent = (brdData as any).transcriptContent;
+      } else {
+        await storage.updateBrdStatus(brd.id, "failed");
+        return res.status(400).json({ message: "Either transcriptId or transcriptContent is required" });
       }
 
       // Return the BRD ID immediately for status tracking
@@ -214,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate BRD asynchronously
       try {
         const brdContent = await generateBrd({
-          transcriptContent: transcript.content,
+          transcriptContent: transcriptContent,
           processArea: brdData.processArea,
           targetSystem: brdData.targetSystem,
           template: brdData.template,
