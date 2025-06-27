@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Form,
@@ -51,6 +52,389 @@ import {
 import FileUpload from "@/components/file-upload";
 import BrdDisplay from "@/components/brd-display";
 import AddTeamDialog from "@/components/add-team-dialog";
+
+// BrdTabs Component
+interface BrdTabsProps {
+  brd: any;
+  onRequirementUpdate?: (requirementId: string, updatedRequirement: any) => void;
+}
+
+function BrdTabs({ brd, onRequirementUpdate }: BrdTabsProps) {
+  const [implementationActivities, setImplementationActivities] = useState<any>(null);
+  const [testCases, setTestCases] = useState<any>(null);
+  const [loadingImplementation, setLoadingImplementation] = useState(false);
+  const [loadingTestCases, setLoadingTestCases] = useState(false);
+
+  const generateImplementationActivities = async () => {
+    setLoadingImplementation(true);
+    try {
+      const response = await fetch("/api/generate-implementation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brd: brd,
+          targetSystem: brd.targetSystem
+        }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to generate implementation activities");
+      
+      const activities = await response.json();
+      setImplementationActivities(activities);
+    } catch (error) {
+      console.error("Error generating implementation activities:", error);
+    } finally {
+      setLoadingImplementation(false);
+    }
+  };
+
+  const generateTestCases = async () => {
+    setLoadingTestCases(true);
+    try {
+      const response = await fetch("/api/generate-test-cases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brd: brd
+        }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to generate test cases");
+      
+      const tests = await response.json();
+      setTestCases(tests);
+    } catch (error) {
+      console.error("Error generating test cases:", error);
+    } finally {
+      setLoadingTestCases(false);
+    }
+  };
+
+  return (
+    <Tabs defaultValue="brd" className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="brd">BRD Document</TabsTrigger>
+        <TabsTrigger value="implementation">Implementation Activities</TabsTrigger>
+        <TabsTrigger value="testcases">Test Cases</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="brd" className="mt-4">
+        <BrdDisplay brd={brd} onRequirementUpdate={onRequirementUpdate} />
+      </TabsContent>
+      
+      <TabsContent value="implementation" className="mt-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Implementation Activities</h3>
+            <Button 
+              onClick={generateImplementationActivities}
+              disabled={loadingImplementation}
+              className="bg-pwc-blue hover:bg-blue-600"
+            >
+              {loadingImplementation ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              Generate Activities
+            </Button>
+          </div>
+          
+          {loadingImplementation && (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 border-3 border-pwc-blue border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-slate-600">Generating implementation activities...</span>
+              </div>
+            </div>
+          )}
+          
+          {implementationActivities && (
+            <ImplementationDisplay activities={implementationActivities} targetSystem={brd.targetSystem} />
+          )}
+          
+          {!implementationActivities && !loadingImplementation && (
+            <div className="text-center py-8 text-slate-500">
+              Click "Generate Activities" to convert BRD requirements into detailed implementation tasks for {brd.targetSystem}.
+            </div>
+          )}
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="testcases" className="mt-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Test Cases</h3>
+            <Button 
+              onClick={generateTestCases}
+              disabled={loadingTestCases}
+              className="bg-pwc-blue hover:bg-blue-600"
+            >
+              {loadingTestCases ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              Generate Test Cases
+            </Button>
+          </div>
+          
+          {loadingTestCases && (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 border-3 border-pwc-blue border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-slate-600">Generating test cases...</span>
+              </div>
+            </div>
+          )}
+          
+          {testCases && (
+            <TestCasesDisplay testCases={testCases} />
+          )}
+          
+          {!testCases && !loadingTestCases && (
+            <div className="text-center py-8 text-slate-500">
+              Click "Generate Test Cases" to create comprehensive test scenarios based on the BRD requirements.
+            </div>
+          )}
+        </div>
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+// ImplementationDisplay Component
+interface ImplementationDisplayProps {
+  activities: any;
+  targetSystem: string;
+}
+
+function ImplementationDisplay({ activities, targetSystem }: ImplementationDisplayProps) {
+  if (!activities) return null;
+
+  return (
+    <div className="space-y-6">
+      {/* Configuration Activities */}
+      {activities.configurationActivities && activities.configurationActivities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <FileText className="mr-2 h-5 w-5 text-pwc-blue" />
+              Configuration Activities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {activities.configurationActivities.map((activity: any, index: number) => (
+                <div key={index} className="border-l-4 border-blue-500 pl-4">
+                  <h4 className="font-medium text-slate-900">{activity.title}</h4>
+                  <p className="text-sm text-slate-600 mb-2">{activity.description}</p>
+                  <div className="flex items-center space-x-4 text-xs text-slate-500">
+                    <span><strong>Effort:</strong> {activity.effort}</span>
+                    <span><strong>Skills:</strong> {activity.skillsRequired.join(", ")}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Development Activities */}
+      {activities.developmentActivities && activities.developmentActivities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Wand2 className="mr-2 h-5 w-5 text-green-600" />
+              Development Activities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {activities.developmentActivities.map((activity: any, index: number) => (
+                <div key={index} className="border-l-4 border-green-500 pl-4">
+                  <h4 className="font-medium text-slate-900">{activity.title}</h4>
+                  <p className="text-sm text-slate-600 mb-2">{activity.description}</p>
+                  <div className="flex items-center space-x-4 text-xs text-slate-500">
+                    <span><strong>Effort:</strong> {activity.effort}</span>
+                    <span><strong>Skills:</strong> {activity.skillsRequired.join(", ")}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Integration Activities */}
+      {activities.integrationActivities && activities.integrationActivities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Plus className="mr-2 h-5 w-5 text-orange-600" />
+              Integration Activities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {activities.integrationActivities.map((activity: any, index: number) => (
+                <div key={index} className="border-l-4 border-orange-500 pl-4">
+                  <h4 className="font-medium text-slate-900">{activity.title}</h4>
+                  <p className="text-sm text-slate-600 mb-2">{activity.description}</p>
+                  <div className="flex items-center space-x-4 text-xs text-slate-500">
+                    <span><strong>Effort:</strong> {activity.effort}</span>
+                    <span><strong>Skills:</strong> {activity.skillsRequired.join(", ")}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// TestCasesDisplay Component
+interface TestCasesDisplayProps {
+  testCases: any;
+}
+
+function TestCasesDisplay({ testCases }: TestCasesDisplayProps) {
+  if (!testCases) return null;
+
+  return (
+    <div className="space-y-6">
+      {/* Functional Test Cases */}
+      {testCases.functionalTests && testCases.functionalTests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CheckCircle className="mr-2 h-5 w-5 text-green-600" />
+              Functional Test Cases
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {testCases.functionalTests.map((test: any, index: number) => (
+                <div key={index} className="border border-slate-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium text-slate-900">{test.id}: {test.title}</h4>
+                    <Badge className={test.priority === 'High' ? 'bg-red-100 text-red-800' : 
+                                   test.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                   'bg-green-100 text-green-800'}>
+                      {test.priority}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-3">{test.description}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="bg-blue-50 p-3 rounded">
+                      <h5 className="font-medium text-blue-800 mb-1">Preconditions</h5>
+                      <p className="text-blue-700">{test.preconditions}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded">
+                      <h5 className="font-medium text-gray-800 mb-1">Test Steps</h5>
+                      <ol className="text-gray-700 space-y-1">
+                        {test.testSteps.map((step: string, idx: number) => (
+                          <li key={idx}>{idx + 1}. {step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded">
+                      <h5 className="font-medium text-green-800 mb-1">Expected Result</h5>
+                      <p className="text-green-700">{test.expectedResult}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Integration Test Cases */}
+      {testCases.integrationTests && testCases.integrationTests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Plus className="mr-2 h-5 w-5 text-orange-600" />
+              Integration Test Cases
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {testCases.integrationTests.map((test: any, index: number) => (
+                <div key={index} className="border border-slate-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium text-slate-900">{test.id}: {test.title}</h4>
+                    <Badge className="bg-orange-100 text-orange-800">Integration</Badge>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-3">{test.description}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="bg-blue-50 p-3 rounded">
+                      <h5 className="font-medium text-blue-800 mb-1">Preconditions</h5>
+                      <p className="text-blue-700">{test.preconditions}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded">
+                      <h5 className="font-medium text-gray-800 mb-1">Test Steps</h5>
+                      <ol className="text-gray-700 space-y-1">
+                        {test.testSteps.map((step: string, idx: number) => (
+                          <li key={idx}>{idx + 1}. {step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded">
+                      <h5 className="font-medium text-green-800 mb-1">Expected Result</h5>
+                      <p className="text-green-700">{test.expectedResult}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Performance Test Cases */}
+      {testCases.performanceTests && testCases.performanceTests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="mr-2 h-5 w-5 text-purple-600" />
+              Performance Test Cases
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {testCases.performanceTests.map((test: any, index: number) => (
+                <div key={index} className="border border-slate-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium text-slate-900">{test.id}: {test.title}</h4>
+                    <Badge className="bg-purple-100 text-purple-800">Performance</Badge>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-3">{test.description}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="bg-purple-50 p-3 rounded">
+                      <h5 className="font-medium text-purple-800 mb-1">Load Conditions</h5>
+                      <p className="text-purple-700">{test.loadConditions}</p>
+                    </div>
+                    <div className="bg-indigo-50 p-3 rounded">
+                      <h5 className="font-medium text-indigo-800 mb-1">Acceptance Criteria</h5>
+                      <p className="text-indigo-700">{test.acceptanceCriteria}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
 
 const brdFormSchema = z.object({
   clientId: z.string().min(1, "Please select a client"),
@@ -877,7 +1261,7 @@ export default function BrdGenerator() {
           </Card>
         )}
 
-        {/* BRD Output */}
+        {/* BRD Output with Tabs */}
         {currentBrd && (
           <Card className="mt-8">
             <CardHeader>
@@ -907,7 +1291,7 @@ export default function BrdGenerator() {
               </div>
             </CardHeader>
             <CardContent>
-              <BrdDisplay brd={currentBrd} onRequirementUpdate={handleRequirementUpdate} />
+              <BrdTabs brd={currentBrd} onRequirementUpdate={handleRequirementUpdate} />
             </CardContent>
           </Card>
         )}

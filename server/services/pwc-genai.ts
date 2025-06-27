@@ -722,3 +722,163 @@ Please provide a comprehensive response in the following JSON format:
     throw new Error(`Failed to generate BRD: ${error.message}`);
   }
 }
+
+export async function generateImplementationActivities(brd: any, targetSystem: string) {
+  try {
+    const prompt = `
+As an expert implementation consultant specializing in ${targetSystem}, convert the following BRD into detailed implementation activities.
+
+Target System: ${targetSystem}
+BRD Content: ${JSON.stringify(brd.content, null, 2)}
+
+Generate a comprehensive implementation plan organized into three categories:
+
+1. **Configuration Activities**: System setup, field configuration, workflow configuration
+2. **Development Activities**: Custom code, integrations, APIs, custom components  
+3. **Integration Activities**: Third-party integrations, data migration, API connections
+
+For each activity, provide:
+- title: Clear activity name
+- description: Detailed description of what needs to be done
+- effort: Estimated effort (e.g., "2-3 days", "1 week")
+- skillsRequired: Array of required skills/expertise
+
+Focus on ${targetSystem}-specific implementation details. Consider Indian banking compliance requirements (RBI, SEBI, IRDAI).
+
+Return JSON in this exact format:
+{
+  "configurationActivities": [
+    {
+      "title": "string",
+      "description": "string", 
+      "effort": "string",
+      "skillsRequired": ["string"]
+    }
+  ],
+  "developmentActivities": [
+    {
+      "title": "string",
+      "description": "string",
+      "effort": "string", 
+      "skillsRequired": ["string"]
+    }
+  ],
+  "integrationActivities": [
+    {
+      "title": "string",
+      "description": "string",
+      "effort": "string",
+      "skillsRequired": ["string"]
+    }
+  ]
+}`;
+
+    const responseText = await callPwcGenAI(prompt);
+    
+    if (!responseText) {
+      throw new Error("No response from AI service");
+    }
+
+    const content = responseText.trim();
+    
+    // Extract JSON from response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No valid JSON found in response");
+    }
+
+    const activities = JSON.parse(jsonMatch[0]);
+    return activities;
+  } catch (error: any) {
+    console.error("Error generating implementation activities:", error);
+    throw new Error(`Failed to generate implementation activities: ${error.message}`);
+  }
+}
+
+export async function generateTestCases(brd: any) {
+  try {
+    const prompt = `
+As a QA testing expert specializing in banking systems, convert the following BRD into comprehensive test cases.
+
+BRD Content: ${JSON.stringify(brd.content, null, 2)}
+
+Generate test cases organized into three categories:
+
+1. **Functional Tests**: Test functional requirements, user workflows, business logic
+2. **Integration Tests**: Test API integrations, data flow, third-party connections
+3. **Performance Tests**: Test system performance, load handling, response times
+
+For functional and integration tests, provide:
+- id: Test case ID (e.g., "TC-F-001", "TC-I-001")
+- title: Clear test case name
+- description: What is being tested
+- priority: High/Medium/Low
+- preconditions: Setup required before test
+- testSteps: Array of step-by-step test actions
+- expectedResult: Expected outcome
+
+For performance tests, provide:
+- id: Test case ID (e.g., "TC-P-001")
+- title: Clear test case name
+- description: What is being tested
+- loadConditions: Load/stress conditions to apply
+- acceptanceCriteria: Performance criteria that must be met
+
+Focus on Indian banking compliance testing (RBI, SEBI, IRDAI) and include security, data privacy, and regulatory validation tests.
+
+Return JSON in this exact format:
+{
+  "functionalTests": [
+    {
+      "id": "string",
+      "title": "string",
+      "description": "string",
+      "priority": "string",
+      "preconditions": "string",
+      "testSteps": ["string"],
+      "expectedResult": "string"
+    }
+  ],
+  "integrationTests": [
+    {
+      "id": "string", 
+      "title": "string",
+      "description": "string",
+      "priority": "string",
+      "preconditions": "string",
+      "testSteps": ["string"],
+      "expectedResult": "string"
+    }
+  ],
+  "performanceTests": [
+    {
+      "id": "string",
+      "title": "string", 
+      "description": "string",
+      "loadConditions": "string",
+      "acceptanceCriteria": "string"
+    }
+  ]
+}`;
+
+    const responseText = await callPwcGenAI(prompt);
+    
+    if (!responseText) {
+      throw new Error("No response from AI service");
+    }
+
+    const content = responseText.trim();
+    
+    // Extract JSON from response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No valid JSON found in response");
+    }
+
+    const testCases = JSON.parse(jsonMatch[0]);
+    return testCases;
+  } catch (error: any) {
+    console.error("Error generating test cases:", error);
+    throw new Error(`Failed to generate test cases: ${error.message}`);
+  }
+}

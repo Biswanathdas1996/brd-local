@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
 import { processUploadedFile, getSampleTranscripts } from "./services/fileProcessor";
-import { generateBrd, generateRequirementEnhancements } from "./services/pwc-genai";
+import { generateBrd, generateRequirementEnhancements, generateImplementationActivities, generateTestCases } from "./services/pwc-genai";
 import { insertTranscriptSchema, insertBrdSchema, insertTeamSchema, insertClientSchema } from "@shared/schema";
 
 const upload = multer({
@@ -311,6 +311,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "BRD deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete BRD" });
+    }
+  });
+
+  // Generate Implementation Activities
+  app.post("/api/generate-implementation", async (req, res) => {
+    try {
+      const { brd, targetSystem } = req.body;
+      
+      if (!brd || !targetSystem) {
+        return res.status(400).json({ message: "BRD and target system are required" });
+      }
+
+      const activities = await generateImplementationActivities(brd, targetSystem);
+      res.json(activities);
+    } catch (error: any) {
+      console.error('Implementation generation error:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Generate Test Cases
+  app.post("/api/generate-test-cases", async (req, res) => {
+    try {
+      const { brd } = req.body;
+      
+      if (!brd) {
+        return res.status(400).json({ message: "BRD is required" });
+      }
+
+      const testCases = await generateTestCases(brd);
+      res.json(testCases);
+    } catch (error: any) {
+      console.error('Test case generation error:', error);
+      res.status(500).json({ message: error.message });
     }
   });
 
