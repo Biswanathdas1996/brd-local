@@ -10,7 +10,7 @@ This document outlines the Large Language Model (LLM) services integrated into t
 
 **Service Provider**: PwC Internal GenAI Infrastructure  
 **Model**: `bedrock.anthropic.claude-sonnet-4` (Claude 4.0 Sonnet via AWS Bedrock)  
-**Integration Location**: `server/services/anthropic.ts`  
+**Integration Location**: `server/services/pwc-genai.ts`  
 **API Endpoint**: `https://genai-sharedservice-americas.pwc.com/completions`  
 **Authentication**: Dual header authentication with `API-Key` and `Authorization: Bearer` using `PWC_GENAI_API_KEY` environment variable
 
@@ -155,7 +155,7 @@ const response = await fetch(PWC_GENAI_ENDPOINT, {
 **Common Error Scenarios**:
 1. **API Key Missing/Invalid**: Application fails to start, requires `PWC_GENAI_API_KEY` environment configuration
 2. **Rate Limiting**: PwC GenAI service rate limits handled with proper error responses
-3. **Content Parsing**: JSON extraction from Claude responses with fallback handling
+3. **Content Parsing**: JSON extraction from AI responses with fallback handling
 4. **Network Connectivity**: PwC internal network connectivity requirements
 5. **Authentication**: Dual header authentication validation
 

@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
 import { processUploadedFile, getSampleTranscripts } from "./services/fileProcessor";
-import { generateBrd, generateRequirementEnhancements } from "./services/anthropic";
+import { generateBrd, generateRequirementEnhancements } from "./services/pwc-genai";
 import { insertTranscriptSchema, insertBrdSchema, insertTeamSchema, insertClientSchema } from "@shared/schema";
 
 const upload = multer({

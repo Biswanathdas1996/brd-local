@@ -101,10 +101,10 @@ June 27, 2025:
 - Implemented inline editing functionality for functional requirements with save/cancel operations
 - Added AI-powered requirement enhancement suggestions with apply enhanced version feature
 - Fixed download format to generate proper Word documents (.docx) instead of markdown files
-- **Refactored LLM integration**: Migrated from external Anthropic API to PwC's internal GenAI shared service
+- **Refactored LLM integration**: Migrated from external API to PwC's internal GenAI shared service
 - Updated all AI service calls to use PwC's secure infrastructure (genai-sharedservice-americas.pwc.com)
 - Enhanced security and compliance by keeping all data processing within PwC's controlled environment
-- Updated comprehensive LLM Services Documentation for new PwC GenAI integration
+- Updated comprehensive LLM Services Documentation for PwC GenAI integration
 - Improved requirement update API with better error handling and content parsing
 - Added query invalidation for real-time BRD data refresh after edits
 
@@ -113,7 +113,7 @@ June 24, 2025:
 - Added client and team hierarchy management
 - Implemented file upload with .txt, .pdf, .docx support
 - Created sample transcript files for testing
-- Integrated Anthropic Claude API for BRD generation
+- Integrated AI API for BRD generation
 - Added team creation functionality to resolve empty dropdown issue
 - Fixed TypeScript errors and HTML validation warnings
 - Migrated from in-memory storage to PostgreSQL database

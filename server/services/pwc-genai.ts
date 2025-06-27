@@ -1,6 +1,6 @@
 /*
 <important_code_snippet_instructions>
-This service integrates with PwC's internal GenAI shared service API instead of external Anthropic API.
+This service integrates with PwC's internal GenAI shared service API.
 Using bedrock.anthropic.claude-sonnet-4 model through PwC's secure internal infrastructure.
 API endpoint: https://genai-sharedservice-americas.pwc.com/completions
 Authentication: Dual header approach with API-Key and Bearer token
@@ -295,7 +295,7 @@ Please provide the response in the following JSON format:
     {
       "version": "1.0",
       "date": "${new Date().toISOString().split('T')[0]}",
-      "author": "AI Assistant",
+      "author": "PwC GenAI Assistant",
       "changes": "Initial BRD generation from transcript analysis"
     }
   ]
