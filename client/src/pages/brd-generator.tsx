@@ -17,6 +17,8 @@ import {
   Eye,
   Plus,
   Trash2,
+  Calendar,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -203,6 +205,154 @@ function BrdTabs({ brd, onRequirementUpdate }: BrdTabsProps) {
   );
 }
 
+// GanttChart Component
+interface GanttChartProps {
+  activities: any;
+}
+
+function GanttChart({ activities }: GanttChartProps) {
+  if (!activities) return null;
+
+  // Combine all activities into a single timeline
+  const allActivities: any[] = [];
+  
+  if (activities.configurationActivities) {
+    activities.configurationActivities.forEach((activity: any, index: number) => {
+      allActivities.push({
+        ...activity,
+        id: `config-${index}`,
+        category: 'Configuration',
+        color: 'bg-blue-500',
+        startWeek: index * 2 + 1,
+        duration: parseInt(activity.effort?.split(' ')[0]) || 2
+      });
+    });
+  }
+  
+  if (activities.developmentActivities) {
+    const configCount = activities.configurationActivities?.length || 0;
+    activities.developmentActivities.forEach((activity: any, index: number) => {
+      allActivities.push({
+        ...activity,
+        id: `dev-${index}`,
+        category: 'Development',
+        color: 'bg-green-500',
+        startWeek: configCount * 2 + index * 3 + 1,
+        duration: parseInt(activity.effort?.split(' ')[0]) || 3
+      });
+    });
+  }
+  
+  if (activities.integrationActivities) {
+    const configCount = activities.configurationActivities?.length || 0;
+    const devCount = activities.developmentActivities?.length || 0;
+    activities.integrationActivities.forEach((activity: any, index: number) => {
+      allActivities.push({
+        ...activity,
+        id: `int-${index}`,
+        category: 'Integration',
+        color: 'bg-orange-500',
+        startWeek: configCount * 2 + devCount * 3 + index * 2 + 1,
+        duration: parseInt(activity.effort?.split(' ')[0]) || 2
+      });
+    });
+  }
+
+  const totalWeeks = Math.max(...allActivities.map(a => a.startWeek + a.duration)) || 20;
+  const weeks = Array.from({ length: totalWeeks }, (_, i) => i + 1);
+
+  return (
+    <div className="space-y-4">
+      {/* Timeline Header */}
+      <div className="text-sm text-slate-600 mb-4">
+        <p>Project Timeline: {totalWeeks} weeks estimated duration</p>
+      </div>
+      
+      {/* Week Headers */}
+      <div className="flex">
+        <div className="w-64 flex-shrink-0"></div>
+        <div className="flex-1 flex gap-1 text-xs text-center overflow-x-auto">
+          {weeks.map(week => (
+            <div key={week} className="flex-shrink-0 w-12 p-1 bg-slate-100 border text-slate-600">
+              W{week}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Activity Rows */}
+      <div className="space-y-2">
+        {allActivities.map((activity) => (
+          <div key={activity.id} className="flex items-center">
+            {/* Activity Info */}
+            <div className="w-64 flex-shrink-0 pr-4">
+              <div className="text-sm font-medium text-slate-900 truncate">
+                {activity.title}
+              </div>
+              <div className="text-xs text-slate-500">
+                {activity.category} • {activity.effort || `${activity.duration} weeks`}
+              </div>
+            </div>
+            
+            {/* Timeline Bar */}
+            <div className="flex-1 flex gap-1 overflow-x-auto">
+              {weeks.map(week => (
+                <div key={week} className="flex-shrink-0 w-12 h-8 bg-slate-50 border rounded relative">
+                  {week >= activity.startWeek && week < activity.startWeek + activity.duration && (
+                    <div className={`absolute inset-1 ${activity.color} rounded text-white text-xs flex items-center justify-center font-medium shadow-sm`}>
+                      {week === activity.startWeek && activity.duration === 1 ? '1w' : 
+                       week === activity.startWeek ? activity.duration + 'w' : ''}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center space-x-6 mt-6 pt-4 border-t">
+        <h4 className="text-sm font-medium text-slate-900">Legend:</h4>
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+          <span className="text-xs text-slate-600">Configuration</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <span className="text-xs text-slate-600">Development</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-orange-500 rounded"></div>
+          <span className="text-xs text-slate-600">Integration</span>
+        </div>
+      </div>
+
+      {/* Project Milestones */}
+      <div className="mt-6 p-4 bg-slate-50 rounded-lg">
+        <h4 className="text-sm font-medium text-slate-900 mb-3 flex items-center">
+          <BarChart3 className="w-4 h-4 mr-2" />
+          Key Milestones
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span>Configuration Complete: Week {Math.max(...(activities.configurationActivities || []).map((_: any, i: number) => (i + 1) * 2)) || 4}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>Development Complete: Week {Math.max(...allActivities.filter(a => a.category === 'Development').map(a => a.startWeek + a.duration)) || 12}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <span>Go-Live: Week {totalWeeks}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ImplementationDisplay Component
 interface ImplementationDisplayProps {
   activities: any;
@@ -291,6 +441,19 @@ function ImplementationDisplay({ activities, targetSystem }: ImplementationDispl
           </CardContent>
         </Card>
       )}
+
+      {/* Project Timeline - Gantt Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Calendar className="mr-2 h-5 w-5 text-purple-600" />
+            Project Timeline & Gantt Chart
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <GanttChart activities={activities} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
