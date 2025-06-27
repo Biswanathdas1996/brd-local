@@ -113,7 +113,7 @@ async function callPwcGenAI(prompt: string, systemPrompt?: string): Promise<stri
     stop: null,
     stream: false,
     stream_options: null,
-    temperature: 0.7,
+    temperature: 0.3,
     top_p: 1
   };
 
@@ -193,12 +193,23 @@ Format your response as JSON:
     const responseText = await callPwcGenAI(userPrompt, systemPrompt);
 
     // Extract JSON from markdown code blocks if present
-    let jsonText = responseText;
-    const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-    if (jsonMatch) {
-      jsonText = jsonMatch[1];
+    let jsonText = responseText.trim();
+    
+    // Try to extract JSON from markdown code blocks
+    const codeBlockMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (codeBlockMatch) {
+      jsonText = codeBlockMatch[1].trim();
+    }
+    
+    // Find the first { and last } to extract the main JSON object
+    const firstBrace = jsonText.indexOf('{');
+    const lastBrace = jsonText.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      jsonText = jsonText.substring(firstBrace, lastBrace + 1);
     }
 
+    console.log('Enhancement JSON text:', jsonText.substring(0, 200) + '...');
     return JSON.parse(jsonText);
   } catch (error: any) {
     console.error('Error generating requirement enhancements:', error);
@@ -209,7 +220,7 @@ Format your response as JSON:
 export async function generateBrd(request: BrdRequest): Promise<BrdContent> {
   const systemPrompt = `You are an expert business analyst specializing in financial services and enterprise software implementations. Your task is to analyze call transcripts from business requirements gathering workshops and generate comprehensive Business Requirements Documents (BRDs).
 
-You will receive transcript content along with context about the process area, target system, client, and team. Generate a structured BRD that includes:
+Generate a minimal BRD with essential sections only. Keep ALL text very brief:
 
 1. **Table of Contents** - A structured outline with sections and page numbers
 2. **Executive Summary** - High-level overview of business objectives and proposed solution
@@ -249,68 +260,103 @@ Ensure all requirements are:
 **Transcript Content:**
 ${request.transcriptContent}
 
-Please provide the response in the following JSON format:
+Please provide a concise response in the following JSON format (keep descriptions brief and focused):
 {
   "tableOfContents": [
     {"section": "Executive Summary", "pageNumber": 1},
     {"section": "Functional Requirements", "pageNumber": 2}
   ],
-  "executiveSummary": "...",
+  "executiveSummary": "Brief 1-2 sentence summary",
   "functionalRequirements": [
     {
       "id": "FR-001",
-      "title": "...",
-      "description": "...",
-      "priority": "High|Medium|Low",
-      "complexity": "High|Medium|Low"
+      "title": "Short title",
+      "description": "One sentence only",
+      "priority": "High",
+      "complexity": "Medium"
+    },
+    {
+      "id": "FR-002", 
+      "title": "Short title",
+      "description": "One sentence only",
+      "priority": "Medium",
+      "complexity": "Low"
     }
   ],
   "nonFunctionalRequirements": [
     {
       "id": "NFR-001",
-      "title": "...",
-      "description": "..."
+      "title": "Short title",
+      "description": "One sentence"
     }
   ],
   "integrationRequirements": [
     {
       "id": "IR-001",
-      "title": "...",
-      "description": "..."
+      "title": "Short title", 
+      "description": "One sentence"
     }
   ],
   "raciMatrix": [
     {
-      "task": "...",
-      "responsible": "...",
-      "accountable": "...",
-      "consulted": "...",
-      "informed": "..."
+      "task": "Task name",
+      "responsible": "Role",
+      "accountable": "Role",
+      "consulted": "Role",
+      "informed": "Role"
     }
   ],
-  "assumptions": ["...", "..."],
-  "constraints": ["...", "..."],
-  "riskMitigation": ["...", "..."],
+  "assumptions": ["Brief assumption 1", "Brief assumption 2"],
+  "constraints": ["Brief constraint 1", "Brief constraint 2"],
+  "riskMitigation": ["Brief risk mitigation 1"],
   "changelog": [
     {
       "version": "1.0",
       "date": "${new Date().toISOString().split('T')[0]}",
       "author": "PwC GenAI Assistant",
-      "changes": "Initial BRD generation from transcript analysis"
+      "changes": "Initial BRD generation"
     }
   ]
 }`;
 
   try {
     const responseText = await callPwcGenAI(userPrompt, systemPrompt);
+    console.log('Raw PwC GenAI response:', responseText);
 
-    // Extract JSON from markdown code blocks if present
-    let jsonText = responseText;
-    const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-    if (jsonMatch) {
-      jsonText = jsonMatch[1];
+    // Extract JSON from PwC GenAI response (handles markdown format)
+    let jsonText = responseText.trim();
+    
+    // Extract JSON from markdown code blocks
+    if (jsonText.includes('```')) {
+      // Find the content between ```json and ```
+      const startMarker = jsonText.indexOf('```');
+      const endMarker = jsonText.indexOf('```', startMarker + 3);
+      
+      if (startMarker !== -1 && endMarker !== -1) {
+        let codeContent = jsonText.substring(startMarker + 3, endMarker).trim();
+        
+        // Remove 'json' if it's at the beginning
+        if (codeContent.startsWith('json')) {
+          codeContent = codeContent.substring(4).trim();
+        }
+        
+        jsonText = codeContent;
+        console.log('Successfully extracted from markdown code block');
+      }
+    }
+    
+    // Ensure we have a valid JSON object
+    if (!jsonText.startsWith('{')) {
+      const firstBrace = jsonText.indexOf('{');
+      const lastBrace = jsonText.lastIndexOf('}');
+      
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        jsonText = jsonText.substring(firstBrace, lastBrace + 1);
+        console.log('Extracted JSON using brace boundaries');
+      }
     }
 
+    console.log('Final JSON to parse (first 300 chars):', jsonText.substring(0, 300));
     const brdData = JSON.parse(jsonText);
     
     // Validate the structure
