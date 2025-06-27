@@ -96,11 +96,22 @@ This is a Business Requirements Document (BRD) generator application built for I
 ## Recent Changes
 
 June 27, 2025:
+- **Major BRD Enhancement Update**: Comprehensive expansion of BRD generation capabilities
+  - **Enhanced Functional Requirements**: Added acceptance criteria, user stories ("As a [role], I want [goal] so that [benefit]"), and dependency tracking
+  - **Expanded Non-Functional Requirements**: Added detailed categorization with scalability metrics, availability requirements, security standards, usability standards, and specific compliance details for RBI/SEBI/IRDAI regulations
+  - **Detailed Integration Requirements**: Enhanced with API specifications (endpoints, data formats, authentication) and step-by-step data flow diagrams
+  - **New Business Process Flows Section**: Current state vs future state workflows with detailed step-by-step processes and decision trees
+  - **New User Interface Requirements Section**: Screen specifications, component details, navigation flows, accessibility standards (WCAG 2.1), and responsive design requirements
+  - **Enhanced Risk Management**: Replaced simple risk mitigation with comprehensive risk categories (Technical, Operational, Compliance, Business), probability/impact assessment, and specific risk ownership
+  - **Updated TypeScript Interfaces**: Comprehensive BrdContent interface supporting all enhanced fields and nested structures
+  - **Enhanced Frontend Display**: Rich UI components showing all new sections with color-coded categories, structured layouts, and detailed breakdowns
 - Enhanced BRD generation with Table of Contents, RACI Matrix, and Changelog sections
 - Added Salesforce Financial Services Cloud, Microsoft Dynamics 365, and Custom Application Development to target systems
 - Implemented inline editing functionality for functional requirements with save/cancel operations
 - Added AI-powered requirement enhancement suggestions with apply enhanced version feature
 - Fixed download format to generate proper Word documents (.docx) instead of markdown files
+- Fixed save function for functional requirements enhancement feature
+- Added BRD delete functionality with confirmation dialogs and proper error handling
 - **Refactored LLM integration**: Migrated from external API to PwC's internal GenAI shared service
 - Updated all AI service calls to use PwC's secure infrastructure (genai-sharedservice-americas.pwc.com)
 - Enhanced security and compliance by keeping all data processing within PwC's controlled environment

@@ -35,16 +35,72 @@ export interface BrdContent {
     description: string;
     priority: string;
     complexity: string;
+    acceptanceCriteria: string[];
+    userStories: Array<{
+      role: string;
+      goal: string;
+      benefit: string;
+    }>;
+    dependencies: string[];
   }>;
   nonFunctionalRequirements: Array<{
     id: string;
     title: string;
     description: string;
+    category: string;
+    scalabilityMetrics?: {
+      concurrentUsers: string;
+      transactionVolume: string;
+    };
+    availabilityRequirements?: {
+      uptime: string;
+      disasterRecovery: string;
+    };
+    securityStandards?: {
+      encryption: string;
+      auditTrails: string;
+      accessControls: string;
+    };
+    usabilityStandards?: {
+      responseTime: string;
+      userExperience: string;
+    };
+    complianceDetails?: {
+      regulations: string[];
+      requirements: string;
+    };
   }>;
   integrationRequirements: Array<{
     id: string;
     title: string;
     description: string;
+    apiSpecifications?: {
+      endpoints: string;
+      dataFormats: string;
+      authentication: string;
+    };
+    dataFlow: string[];
+  }>;
+  businessProcessFlows: Array<{
+    id: string;
+    processName: string;
+    currentState: string;
+    futureState: string;
+    steps: Array<{
+      stepNumber: number;
+      description: string;
+      actor: string;
+      decision?: string;
+    }>;
+  }>;
+  userInterfaceRequirements: Array<{
+    id: string;
+    screenName: string;
+    description: string;
+    components: string[];
+    navigationFlow: string;
+    accessibility: string;
+    responsiveness: string;
   }>;
   raciMatrix: Array<{
     task: string;
@@ -55,7 +111,15 @@ export interface BrdContent {
   }>;
   assumptions: string[];
   constraints: string[];
-  riskMitigation: string[];
+  riskManagement: Array<{
+    id: string;
+    category: string;
+    description: string;
+    probability: string;
+    impact: string;
+    mitigation: string;
+    owner: string;
+  }>;
   changelog: Array<{
     version: string;
     date: string;
@@ -356,18 +420,20 @@ Format your response as JSON:
 export async function generateBrd(request: BrdRequest): Promise<BrdContent> {
   const systemPrompt = `You are an expert business analyst specializing in financial services and enterprise software implementations. Your task is to analyze call transcripts from business requirements gathering workshops and generate comprehensive Business Requirements Documents (BRDs).
 
-Generate a minimal BRD with essential sections only. Keep ALL text very brief:
+Generate a comprehensive BRD with enhanced sections:
 
 1. **Table of Contents** - A structured outline with sections and page numbers
 2. **Executive Summary** - High-level overview of business objectives and proposed solution
-3. **Functional Requirements** - Detailed functional requirements with IDs, titles, descriptions, priority levels (High/Medium/Low), and complexity ratings (High/Medium/Low)
-4. **Non-Functional Requirements** - Performance, security, scalability, and usability requirements
-5. **Integration Requirements** - System integration and data flow requirements
-6. **RACI Matrix** - Responsibility assignment matrix for key tasks and deliverables
-7. **Assumptions** - Key assumptions made during requirements gathering
-8. **Constraints** - Technical, business, and regulatory constraints
-9. **Risk Mitigation** - Identified risks and mitigation strategies
-10. **Changelog** - Version control and change tracking
+3. **Functional Requirements** - Enhanced with acceptance criteria, user stories, and dependencies
+4. **Non-Functional Requirements** - Categorized with specific metrics for scalability, availability, security, usability, and compliance
+5. **Integration Requirements** - Detailed with API specifications and data flow processes
+6. **Business Process Flows** - Current state vs future state workflows with step-by-step processes
+7. **User Interface Requirements** - Screen specifications, navigation flows, and accessibility standards
+8. **RACI Matrix** - Responsibility assignment matrix for key tasks and deliverables
+9. **Assumptions** - Key assumptions made during requirements gathering
+10. **Constraints** - Technical, business, and regulatory constraints
+11. **Risk Management** - Categorized risks with probability, impact, mitigation, and ownership
+12. **Changelog** - Version control and change tracking
 
 Focus specifically on Indian banking context with:
 - RBI (Reserve Bank of India) regulatory compliance
@@ -378,9 +444,10 @@ Focus specifically on Indian banking context with:
 - Digital banking transformation
 
 Ensure all requirements are:
-- Specific and measurable
-- Technically feasible
-- Compliant with Indian banking regulations
+- Specific and measurable with clear acceptance criteria
+- Include user stories in "As a [role], I want [goal] so that [benefit]" format
+- Technically feasible with proper dependencies identified
+- Compliant with Indian banking regulations (RBI, SEBI, IRDAI)
 - Aligned with digital transformation goals`;
 
   const userPrompt = `Based on the following call transcript and context, generate a comprehensive Business Requirements Document:
@@ -396,61 +463,172 @@ Ensure all requirements are:
 **Transcript Content:**
 ${request.transcriptContent}
 
-Please provide a concise response in the following JSON format (keep descriptions brief and focused):
+Please provide a comprehensive response in the following JSON format:
 {
   "tableOfContents": [
     {"section": "Executive Summary", "pageNumber": 1},
-    {"section": "Functional Requirements", "pageNumber": 2}
+    {"section": "Functional Requirements", "pageNumber": 2},
+    {"section": "Non-Functional Requirements", "pageNumber": 3},
+    {"section": "Integration Requirements", "pageNumber": 4},
+    {"section": "Business Process Flows", "pageNumber": 5},
+    {"section": "User Interface Requirements", "pageNumber": 6},
+    {"section": "RACI Matrix", "pageNumber": 7},
+    {"section": "Risk Management", "pageNumber": 8},
+    {"section": "Assumptions", "pageNumber": 9},
+    {"section": "Constraints", "pageNumber": 10},
+    {"section": "Changelog", "pageNumber": 11}
   ],
-  "executiveSummary": "Brief 1-2 sentence summary",
+  "executiveSummary": "Comprehensive 2-3 sentence summary including business objectives and value proposition",
   "functionalRequirements": [
     {
       "id": "FR-001",
-      "title": "Short title",
-      "description": "One sentence only",
+      "title": "Requirement title",
+      "description": "Detailed description of the functional requirement",
       "priority": "High",
-      "complexity": "Medium"
-    },
-    {
-      "id": "FR-002", 
-      "title": "Short title",
-      "description": "One sentence only",
-      "priority": "Medium",
-      "complexity": "Low"
+      "complexity": "Medium",
+      "acceptanceCriteria": [
+        "Specific measurable condition 1",
+        "Specific measurable condition 2"
+      ],
+      "userStories": [
+        {
+          "role": "Bank Customer",
+          "goal": "apply for a loan online",
+          "benefit": "faster processing and convenience"
+        }
+      ],
+      "dependencies": ["FR-002", "System X integration"]
     }
   ],
   "nonFunctionalRequirements": [
     {
       "id": "NFR-001",
-      "title": "Short title",
-      "description": "One sentence"
+      "title": "Performance requirement",
+      "description": "Detailed performance specification",
+      "category": "Performance",
+      "scalabilityMetrics": {
+        "concurrentUsers": "1000 concurrent users",
+        "transactionVolume": "10,000 transactions per day"
+      }
+    },
+    {
+      "id": "NFR-002", 
+      "title": "Security requirement",
+      "description": "Security specification",
+      "category": "Security",
+      "securityStandards": {
+        "encryption": "AES-256 encryption for data at rest",
+        "auditTrails": "Complete audit logs for all transactions",
+        "accessControls": "Role-based access control with MFA"
+      }
+    },
+    {
+      "id": "NFR-003",
+      "title": "Availability requirement", 
+      "description": "System availability specification",
+      "category": "Availability",
+      "availabilityRequirements": {
+        "uptime": "99.9% uptime SLA",
+        "disasterRecovery": "4-hour RTO, 1-hour RPO"
+      }
+    },
+    {
+      "id": "NFR-004",
+      "title": "Compliance requirement",
+      "description": "Regulatory compliance specification", 
+      "category": "Compliance",
+      "complianceDetails": {
+        "regulations": ["RBI Guidelines", "KYC/AML Norms"],
+        "requirements": "Must comply with RBI's digital lending guidelines"
+      }
     }
   ],
   "integrationRequirements": [
     {
       "id": "IR-001",
-      "title": "Short title", 
-      "description": "One sentence"
+      "title": "Core banking integration",
+      "description": "Integration with core banking system",
+      "apiSpecifications": {
+        "endpoints": "/api/customers, /api/accounts",
+        "dataFormats": "JSON over HTTPS",
+        "authentication": "OAuth 2.0 with JWT tokens"
+      },
+      "dataFlow": [
+        "Customer data retrieved from core banking",
+        "Account balance validated",
+        "Transaction posted to core system"
+      ]
+    }
+  ],
+  "businessProcessFlows": [
+    {
+      "id": "BPF-001",
+      "processName": "Loan Application Process",
+      "currentState": "Manual paper-based application with 5-7 day processing",
+      "futureState": "Digital application with automated decisioning in 24 hours",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Customer submits online application",
+          "actor": "Customer",
+          "decision": "Application complete?"
+        },
+        {
+          "stepNumber": 2,
+          "description": "System validates customer data",
+          "actor": "System"
+        }
+      ]
+    }
+  ],
+  "userInterfaceRequirements": [
+    {
+      "id": "UI-001",
+      "screenName": "Loan Application Form",
+      "description": "Customer-facing loan application interface",
+      "components": ["Input fields", "Document upload", "Progress indicator"],
+      "navigationFlow": "Home > Products > Loans > Application > Review > Submit",
+      "accessibility": "WCAG 2.1 AA compliance",
+      "responsiveness": "Mobile-first responsive design"
     }
   ],
   "raciMatrix": [
     {
-      "task": "Task name",
-      "responsible": "Role",
-      "accountable": "Role",
-      "consulted": "Role",
-      "informed": "Role"
+      "task": "Requirements gathering",
+      "responsible": "Business Analyst",
+      "accountable": "Project Manager", 
+      "consulted": "Subject Matter Expert",
+      "informed": "Stakeholders"
     }
   ],
-  "assumptions": ["Brief assumption 1", "Brief assumption 2"],
-  "constraints": ["Brief constraint 1", "Brief constraint 2"],
-  "riskMitigation": ["Brief risk mitigation 1"],
+  "assumptions": ["API documentation is available", "Regulatory approval obtained"],
+  "constraints": ["Budget limitations", "6-month timeline"],
+  "riskManagement": [
+    {
+      "id": "RISK-001",
+      "category": "Technical", 
+      "description": "API integration complexity",
+      "probability": "Medium",
+      "impact": "High",
+      "mitigation": "Conduct technical spike and proof of concept",
+      "owner": "Technical Lead"
+    },
+    {
+      "id": "RISK-002",
+      "category": "Compliance",
+      "description": "Regulatory changes",
+      "probability": "Low", 
+      "impact": "High",
+      "mitigation": "Regular monitoring of RBI updates",
+      "owner": "Compliance Officer"
+    }
+  ],
   "changelog": [
     {
       "version": "1.0",
       "date": "${new Date().toISOString().split("T")[0]}",
       "author": "PwC GenAI Assistant",
-      "changes": "Initial BRD generation"
+      "changes": "Initial comprehensive BRD generation"
     }
   ]
 }`;
