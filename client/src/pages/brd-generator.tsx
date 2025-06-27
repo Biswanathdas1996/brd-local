@@ -4,17 +4,49 @@ import { queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { FileText, User, Upload, Wand2, Download, RefreshCw, Clock, CheckCircle, XCircle, Eye, Plus } from "lucide-react";
+import {
+  FileText,
+  User,
+  Upload,
+  Wand2,
+  Download,
+  RefreshCw,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import FileUpload from "@/components/file-upload";
 import BrdDisplay from "@/components/brd-display";
 import AddTeamDialog from "@/components/add-team-dialog";
@@ -25,7 +57,7 @@ const brdFormSchema = z.object({
   transcriptId: z.string().min(1, "Please upload a transcript"),
   processArea: z.enum([
     "account_opening",
-    "loan_processing", 
+    "loan_processing",
     "customer_onboarding",
     "kyc_aml_compliance",
     "digital_banking",
@@ -35,7 +67,7 @@ const brdFormSchema = z.object({
     "trade_finance",
     "treasury_management",
     "regulatory_reporting",
-    "risk_management"
+    "risk_management",
   ]),
   targetSystem: z.enum([
     "finacle",
@@ -53,10 +85,14 @@ const brdFormSchema = z.object({
     "npci_upi",
     "salesforce_financial_services",
     "microsoft_dynamics_365",
-    "custom_application_development"
+    "custom_application_development",
   ]),
-  template: z.enum(["standard", "agile", "detailed", "executive"]).default("standard"),
-  analysisDepth: z.enum(["basic", "detailed", "comprehensive"]).default("detailed"),
+  template: z
+    .enum(["standard", "agile", "detailed", "executive"])
+    .default("standard"),
+  analysisDepth: z
+    .enum(["basic", "detailed", "comprehensive"])
+    .default("detailed"),
 });
 
 type BrdFormData = z.infer<typeof brdFormSchema>;
@@ -119,7 +155,8 @@ export default function BrdGenerator() {
   const selectedClientId = form.watch("clientId");
   const { data: teams } = useQuery({
     queryKey: ["/api/teams", selectedClientId],
-    queryFn: () => fetch(`/api/teams/${selectedClientId}`).then(res => res.json()),
+    queryFn: () =>
+      fetch(`/api/teams/${selectedClientId}`).then((res) => res.json()),
     enabled: !!selectedClientId,
   });
 
@@ -141,12 +178,11 @@ export default function BrdGenerator() {
           transcriptId: parseInt(data.transcriptId),
         }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message);
       }
-      
       return response.json();
     },
     onSuccess: (data) => {
@@ -165,12 +201,12 @@ export default function BrdGenerator() {
   // Poll BRD status
   const pollBrdStatus = async (brdId: number) => {
     setGenerationProgress(20);
-    
+
     const checkStatus = async () => {
       try {
         const response = await fetch(`/api/brd/${brdId}`);
         const brd = await response.json();
-        
+
         if (brd.status === "completed") {
           setGenerationProgress(100);
           setCurrentBrd(brd);
@@ -178,7 +214,8 @@ export default function BrdGenerator() {
           queryClient.invalidateQueries({ queryKey: ["/api/brds"] });
           toast({
             title: "BRD Generated Successfully",
-            description: "Your Business Requirements Document is ready for review.",
+            description:
+              "Your Business Requirements Document is ready for review.",
           });
         } else if (brd.status === "failed") {
           setIsGenerating(false);
@@ -190,7 +227,7 @@ export default function BrdGenerator() {
           });
         } else {
           // Still generating, continue polling
-          setGenerationProgress(prev => Math.min(prev + 10, 90));
+          setGenerationProgress((prev) => Math.min(prev + 10, 90));
           setTimeout(checkStatus, 2000);
         }
       } catch (error) {
@@ -203,7 +240,7 @@ export default function BrdGenerator() {
         });
       }
     };
-    
+
     setTimeout(checkStatus, 1000);
   };
 
@@ -214,7 +251,7 @@ export default function BrdGenerator() {
   const handleTranscriptUploaded = (transcript: any, suggestions?: any) => {
     setUploadedTranscript(transcript);
     form.setValue("transcriptId", transcript.id.toString());
-    
+
     if (suggestions?.suggestedProcessArea) {
       form.setValue("processArea", suggestions.suggestedProcessArea);
     }
@@ -225,7 +262,7 @@ export default function BrdGenerator() {
 
   const handleViewTranscript = () => {
     if (uploadedTranscript) {
-      const newWindow = window.open('', '_blank');
+      const newWindow = window.open("", "_blank");
       if (newWindow) {
         newWindow.document.write(`
           <html>
@@ -250,16 +287,16 @@ export default function BrdGenerator() {
 
   const handleDownload = () => {
     if (!currentBrd) return;
-    
+
     // Generate Word document content
     const content = generateWordDocument(currentBrd);
-    const blob = new Blob([content], { 
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+    const blob = new Blob([content], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `BRD_${currentBrd.id}_${new Date().toISOString().split('T')[0]}.docx`;
+    a.download = `BRD_${currentBrd.id}_${new Date().toISOString().split("T")[0]}.docx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -294,12 +331,19 @@ export default function BrdGenerator() {
           <p><strong>Process Area:</strong> ${processAreaLabels[brd.processArea as keyof typeof processAreaLabels]}</p>
           <p><strong>Target System:</strong> ${targetSystemLabels[brd.targetSystem as keyof typeof targetSystemLabels]}</p>
           
-          ${brd.content.tableOfContents ? `
+          ${
+            brd.content.tableOfContents
+              ? `
           <h2>Table of Contents</h2>
-          ${brd.content.tableOfContents.map((item: any) => 
-            `<div class="toc-item"><span>${item.section}</span><span>Page ${item.pageNumber}</span></div>`
-          ).join('')}
-          ` : ''}
+          ${brd.content.tableOfContents
+            .map(
+              (item: any) =>
+                `<div class="toc-item"><span>${item.section}</span><span>Page ${item.pageNumber}</span></div>`,
+            )
+            .join("")}
+          `
+              : ""
+          }
           
           <h2>Executive Summary</h2>
           <p>${brd.content.executiveSummary}</p>
@@ -313,7 +357,10 @@ export default function BrdGenerator() {
               <th>Priority</th>
               <th>Complexity</th>
             </tr>
-            ${brd.content.functionalRequirements?.map((req: any) => `
+            ${
+              brd.content.functionalRequirements
+                ?.map(
+                  (req: any) => `
               <tr class="priority-${req.priority.toLowerCase()}">
                 <td>${req.id}</td>
                 <td>${req.title}</td>
@@ -321,7 +368,10 @@ export default function BrdGenerator() {
                 <td>${req.priority}</td>
                 <td>${req.complexity}</td>
               </tr>
-            `).join('') || ''}
+            `,
+                )
+                .join("") || ""
+            }
           </table>
           
           <h2>Non-Functional Requirements</h2>
@@ -331,13 +381,19 @@ export default function BrdGenerator() {
               <th>Title</th>
               <th>Description</th>
             </tr>
-            ${brd.content.nonFunctionalRequirements?.map((req: any) => `
+            ${
+              brd.content.nonFunctionalRequirements
+                ?.map(
+                  (req: any) => `
               <tr>
                 <td>${req.id}</td>
                 <td>${req.title}</td>
                 <td>${req.description}</td>
               </tr>
-            `).join('') || ''}
+            `,
+                )
+                .join("") || ""
+            }
           </table>
           
           <h2>Integration Requirements</h2>
@@ -347,16 +403,24 @@ export default function BrdGenerator() {
               <th>Title</th>
               <th>Description</th>
             </tr>
-            ${brd.content.integrationRequirements?.map((req: any) => `
+            ${
+              brd.content.integrationRequirements
+                ?.map(
+                  (req: any) => `
               <tr>
                 <td>${req.id}</td>
                 <td>${req.title}</td>
                 <td>${req.description}</td>
               </tr>
-            `).join('') || ''}
+            `,
+                )
+                .join("") || ""
+            }
           </table>
           
-          ${brd.content.raciMatrix ? `
+          ${
+            brd.content.raciMatrix
+              ? `
           <h2>RACI Matrix</h2>
           <table>
             <tr>
@@ -366,7 +430,9 @@ export default function BrdGenerator() {
               <th>Consulted</th>
               <th>Informed</th>
             </tr>
-            ${brd.content.raciMatrix.map((item: any) => `
+            ${brd.content.raciMatrix
+              .map(
+                (item: any) => `
               <tr>
                 <td>${item.task}</td>
                 <td>${item.responsible}</td>
@@ -374,38 +440,50 @@ export default function BrdGenerator() {
                 <td>${item.consulted}</td>
                 <td>${item.informed}</td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </table>
-          ` : ''}
+          `
+              : ""
+          }
           
           <h2>Assumptions</h2>
           <ul>
-            ${brd.content.assumptions?.map((assumption: string) => `<li>${assumption}</li>`).join('') || ''}
+            ${brd.content.assumptions?.map((assumption: string) => `<li>${assumption}</li>`).join("") || ""}
           </ul>
           
           <h2>Constraints</h2>
           <ul>
-            ${brd.content.constraints?.map((constraint: string) => `<li>${constraint}</li>`).join('') || ''}
+            ${brd.content.constraints?.map((constraint: string) => `<li>${constraint}</li>`).join("") || ""}
           </ul>
           
           <h2>Risk Mitigation</h2>
           <ul>
-            ${brd.content.riskMitigation?.map((risk: string) => `<li>${risk}</li>`).join('') || ''}
+            ${brd.content.riskMitigation?.map((risk: string) => `<li>${risk}</li>`).join("") || ""}
           </ul>
           
-          ${brd.content.changelog ? `
+          ${
+            brd.content.changelog
+              ? `
           <h2>Changelog</h2>
-          ${brd.content.changelog.map((entry: any) => `
+          ${brd.content.changelog
+            .map(
+              (entry: any) => `
             <div class="changelog-entry">
               <strong>Version ${entry.version}</strong> - ${entry.date} - ${entry.author}<br>
               ${entry.changes}
             </div>
-          `).join('')}
-          ` : ''}
+          `,
+            )
+            .join("")}
+          `
+              : ""
+          }
         </body>
       </html>
     `;
-    
+
     return htmlContent;
   };
 
@@ -421,14 +499,20 @@ export default function BrdGenerator() {
                   <FileText className="text-white text-sm" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-semibold text-slate-900">BRD Generator</h1>
-                  <p className="text-xs text-slate-500">Indian Banking Systems Advisory</p>
+                  <h1 className="text-lg font-semibold text-slate-900">
+                    BRD Generator
+                  </h1>
+                  <p className="text-xs text-slate-500">
+                    Indian Banking Systems Advisory
+                  </p>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900">Priya Sharma</p>
+                <p className="text-sm font-medium text-slate-900">
+                  Priya Sharma
+                </p>
                 <p className="text-xs text-slate-500">Banking Consultant</p>
               </div>
               <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
@@ -455,10 +539,13 @@ export default function BrdGenerator() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Client</FormLabel>
-                        <Select onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue("teamId", ""); // Reset team when client changes
-                        }} value={field.value}>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue("teamId", ""); // Reset team when client changes
+                          }}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a client..." />
@@ -466,7 +553,10 @@ export default function BrdGenerator() {
                           </FormControl>
                           <SelectContent>
                             {clients?.map((client: any) => (
-                              <SelectItem key={client.id} value={client.id.toString()}>
+                              <SelectItem
+                                key={client.id}
+                                value={client.id.toString()}
+                              >
                                 {client.name}
                               </SelectItem>
                             ))}
@@ -485,8 +575,8 @@ export default function BrdGenerator() {
                         <FormLabel className="flex items-center justify-between">
                           Team
                           {selectedClientId && (
-                            <AddTeamDialog 
-                              clientId={selectedClientId} 
+                            <AddTeamDialog
+                              clientId={selectedClientId}
                               onTeamAdded={(team) => {
                                 // Auto-select the newly created team
                                 form.setValue("teamId", team.id.toString());
@@ -494,15 +584,28 @@ export default function BrdGenerator() {
                             />
                           )}
                         </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedClientId}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={!selectedClientId}
+                        >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={selectedClientId ? "Select a team..." : "Select a client first"} />
+                              <SelectValue
+                                placeholder={
+                                  selectedClientId
+                                    ? "Select a team..."
+                                    : "Select a client first"
+                                }
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {teams?.map((team: any) => (
-                              <SelectItem key={team.id} value={team.id.toString()}>
+                              <SelectItem
+                                key={team.id}
+                                value={team.id.toString()}
+                              >
                                 {team.name}
                               </SelectItem>
                             ))}
@@ -529,8 +632,12 @@ export default function BrdGenerator() {
                       <div className="flex items-center space-x-3">
                         <CheckCircle className="text-pwc-green" />
                         <div>
-                          <p className="text-sm font-medium text-slate-900">{uploadedTranscript.filename}</p>
-                          <p className="text-xs text-slate-500">Uploaded successfully</p>
+                          <p className="text-sm font-medium text-slate-900">
+                            {uploadedTranscript.filename}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Uploaded successfully
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -550,18 +657,23 @@ export default function BrdGenerator() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Process Area</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select process area..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.entries(processAreaLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
+                            {Object.entries(processAreaLabels).map(
+                              ([value, label]) => (
+                                <SelectItem key={value} value={value}>
+                                  {label}
+                                </SelectItem>
+                              ),
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -575,18 +687,23 @@ export default function BrdGenerator() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Target System</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select target system..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.entries(targetSystemLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
+                            {Object.entries(targetSystemLabels).map(
+                              ([value, label]) => (
+                                <SelectItem key={value} value={value}>
+                                  {label}
+                                </SelectItem>
+                              ),
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -600,17 +717,28 @@ export default function BrdGenerator() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>BRD Template</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="standard">Standard BRD Template</SelectItem>
-                            <SelectItem value="agile">Agile User Stories Format</SelectItem>
-                            <SelectItem value="detailed">Detailed Technical Specification</SelectItem>
-                            <SelectItem value="executive">Executive Summary Focus</SelectItem>
+                            <SelectItem value="standard">
+                              Standard BRD Template
+                            </SelectItem>
+                            <SelectItem value="agile">
+                              Agile User Stories Format
+                            </SelectItem>
+                            <SelectItem value="detailed">
+                              Detailed Technical Specification
+                            </SelectItem>
+                            <SelectItem value="executive">
+                              Executive Summary Focus
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -639,8 +767,13 @@ export default function BrdGenerator() {
                               <Label htmlFor="detailed">Detailed</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="comprehensive" id="comprehensive" />
-                              <Label htmlFor="comprehensive">Comprehensive</Label>
+                              <RadioGroupItem
+                                value="comprehensive"
+                                id="comprehensive"
+                              />
+                              <Label htmlFor="comprehensive">
+                                Comprehensive
+                              </Label>
                             </div>
                           </RadioGroup>
                         </FormControl>
@@ -649,8 +782,8 @@ export default function BrdGenerator() {
                     )}
                   />
 
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-pwc-blue hover:bg-blue-600"
                     disabled={isGenerating || !uploadedTranscript}
                   >
@@ -672,8 +805,12 @@ export default function BrdGenerator() {
                   <div className="w-8 h-8 border-4 border-pwc-blue border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-slate-900">Generating BRD...</h3>
-                  <p className="text-sm text-slate-500">Analyzing transcript content and generating requirements...</p>
+                  <h3 className="text-lg font-medium text-slate-900">
+                    Generating BRD...
+                  </h3>
+                  <p className="text-sm text-slate-500">
+                    Analyzing transcript content and generating requirements...
+                  </p>
                 </div>
               </div>
               <div className="mt-4">
@@ -689,20 +826,23 @@ export default function BrdGenerator() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Generated Business Requirements Document</CardTitle>
+                  <CardTitle>
+                    Generated Business Requirements Document
+                  </CardTitle>
                   <p className="text-sm text-slate-500 mt-1">
-                    Generated on {new Date(currentBrd.generatedAt).toLocaleString()}
+                    Generated on{" "}
+                    {new Date(currentBrd.generatedAt).toLocaleString()}
                   </p>
                 </div>
                 <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setCurrentBrd(null)}
-                  >
+                  <Button variant="outline" onClick={() => setCurrentBrd(null)}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     New BRD
                   </Button>
-                  <Button onClick={handleDownload} className="bg-pwc-blue hover:bg-blue-600">
+                  <Button
+                    onClick={handleDownload}
+                    className="bg-pwc-blue hover:bg-blue-600"
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Download
                   </Button>
@@ -741,22 +881,40 @@ export default function BrdGenerator() {
                       </TableCell>
                       <TableCell>{brd.clientName}</TableCell>
                       <TableCell>
-                        {processAreaLabels[brd.processArea as keyof typeof processAreaLabels]}
+                        {
+                          processAreaLabels[
+                            brd.processArea as keyof typeof processAreaLabels
+                          ]
+                        }
                       </TableCell>
                       <TableCell>
-                        {targetSystemLabels[brd.targetSystem as keyof typeof targetSystemLabels]}
+                        {
+                          targetSystemLabels[
+                            brd.targetSystem as keyof typeof targetSystemLabels
+                          ]
+                        }
                       </TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={
-                            brd.status === "completed" ? "default" :
-                            brd.status === "generating" ? "secondary" : "destructive"
+                            brd.status === "completed"
+                              ? "default"
+                              : brd.status === "generating"
+                                ? "secondary"
+                                : "destructive"
                           }
                         >
-                          {brd.status === "completed" && <CheckCircle className="mr-1 h-3 w-3" />}
-                          {brd.status === "generating" && <Clock className="mr-1 h-3 w-3" />}
-                          {brd.status === "failed" && <XCircle className="mr-1 h-3 w-3" />}
-                          {brd.status.charAt(0).toUpperCase() + brd.status.slice(1)}
+                          {brd.status === "completed" && (
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                          )}
+                          {brd.status === "generating" && (
+                            <Clock className="mr-1 h-3 w-3" />
+                          )}
+                          {brd.status === "failed" && (
+                            <XCircle className="mr-1 h-3 w-3" />
+                          )}
+                          {brd.status.charAt(0).toUpperCase() +
+                            brd.status.slice(1)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -779,7 +937,8 @@ export default function BrdGenerator() {
               </Table>
             ) : (
               <div className="text-center py-8 text-slate-500">
-                No BRDs generated yet. Upload a transcript and generate your first BRD!
+                No BRDs generated yet. Upload a transcript and generate your
+                first BRD!
               </div>
             )}
           </CardContent>
