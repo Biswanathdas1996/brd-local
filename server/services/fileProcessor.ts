@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import mammoth from 'mammoth';
+import * as XLSX from 'xlsx';
 
 export interface ProcessedFile {
   content: string;
@@ -18,19 +20,40 @@ export async function processUploadedFile(filePath: string, originalName: string
         break;
       
       case '.pdf':
-        // For PDF processing, we would use pdf-parse
-        // Since we can't install packages, we'll read as text for now
+        // For PDF files, read as text for now (proper PDF parsing can be added later)
         content = await fs.promises.readFile(filePath, 'utf-8');
         break;
       
       case '.docx':
-        // For DOCX processing, we would use mammoth
-        // Since we can't install packages, we'll read as text for now
-        content = await fs.promises.readFile(filePath, 'utf-8');
+        // Use mammoth to extract text from Word documents
+        const docxResult = await mammoth.extractRawText({ path: filePath });
+        content = docxResult.value;
+        break;
+
+      case '.xlsx':
+      case '.xls':
+        // Use xlsx to read Excel files and convert to text
+        const workbook = XLSX.readFile(filePath);
+        const sheets = workbook.SheetNames;
+        let excelContent = '';
+        
+        sheets.forEach((sheetName, index) => {
+          const worksheet = workbook.Sheets[sheetName];
+          const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          excelContent += `\n=== Sheet: ${sheetName} ===\n`;
+          sheetData.forEach((row: any[], rowIndex) => {
+            if (row.some(cell => cell !== undefined && cell !== '')) {
+              excelContent += row.join('\t') + '\n';
+            }
+          });
+        });
+        
+        content = excelContent.trim();
         break;
       
       default:
-        throw new Error(`Unsupported file type: ${fileExtension}`);
+        throw new Error(`Unsupported file type: ${fileExtension}. Supported formats: .txt, .pdf, .docx, .xlsx, .xls`);
     }
 
     // Clean up the uploaded file
@@ -49,7 +72,7 @@ export async function processUploadedFile(filePath: string, originalName: string
       console.error('Failed to clean up uploaded file:', unlinkError);
     }
     
-    throw new Error(`Failed to process file: ${error.message}`);
+    throw new Error(`Failed to process file: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -213,6 +236,31 @@ Success Metrics:
 - Improve customer satisfaction to 4.8/5`,
       processArea: "payment_processing",
       targetSystem: "npci_upi"
+    },
+    {
+      name: "loan_portfolio_analysis.xlsx",
+      content: `=== Sheet: Loan Portfolio Summary ===
+Month   Total Loans     Amount (Crores) NPAs    Recovery Rate
+Jan 2024        2450    1250.5  45      92.3%
+Feb 2024        2680    1420.8  38      94.1%
+Mar 2024        2890    1580.2  52      89.7%
+
+=== Sheet: Risk Assessment ===
+Risk Category   Count   Percentage      Action Required
+Low Risk        1890    65.4%   Standard Processing
+Medium Risk     756     26.2%   Enhanced Due Diligence
+High Risk       244     8.4%    Manual Review
+
+=== Sheet: Process Requirements ===
+Requirement     Current State   Target State    Priority
+Automated Credit Scoring        Manual Review   AI-Based System High
+Real-time Risk Assessment       Batch Processing        Real-time API   Medium
+Document Verification   Physical Verification   Digital KYC     High
+Loan Disbursement       4-5 Days        Same Day        High
+
+Workshop Notes: The bank requires a comprehensive loan processing system that can handle increased volume while maintaining risk controls. Key focus areas include automation of credit decisions, integration with external data sources (CIBIL, GST, ITR), and compliance with RBI lending guidelines.`,
+      processArea: "loan_processing",
+      targetSystem: "finacle"
     }
   ];
 }

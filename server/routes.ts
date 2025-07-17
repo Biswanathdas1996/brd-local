@@ -13,13 +13,13 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req: any, file: any, cb: any) => {
-    const allowedTypes = ['.txt', '.pdf', '.docx'];
+    const allowedTypes = ['.txt', '.pdf', '.docx', '.xlsx', '.xls'];
     const fileExt = path.extname(file.originalname).toLowerCase();
     
     if (allowedTypes.includes(fileExt)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only .txt, .pdf, and .docx files are allowed.'));
+      cb(new Error('Invalid file type. Only .txt, .pdf, .docx, .xlsx, and .xls files are allowed.'));
     }
   },
 });

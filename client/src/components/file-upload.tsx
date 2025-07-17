@@ -117,13 +117,13 @@ export default function FileUpload({ onTranscriptUploaded }: FileUploadProps) {
   };
 
   const handleFileUpload = (file: File) => {
-    const allowedTypes = ['.txt', '.pdf', '.docx'];
+    const allowedTypes = ['.txt', '.pdf', '.docx', '.xlsx', '.xls'];
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
     
     if (!allowedTypes.includes(fileExt)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a .txt, .pdf, or .docx file.",
+        description: "Please upload a .txt, .pdf, .docx, .xlsx, or .xls file.",
         variant: "destructive",
       });
       return;
@@ -199,11 +199,11 @@ export default function FileUpload({ onTranscriptUploaded }: FileUploadProps) {
             <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
             <h3 className="text-lg font-medium text-slate-900 mb-2">Upload Transcript File</h3>
             <p className="text-sm text-slate-500 mb-4">Drag and drop your file here, or click to browse</p>
-            <p className="text-xs text-slate-400 mb-4">Supports: .txt, .docx, .pdf (Max 10MB)</p>
+            <p className="text-xs text-slate-400 mb-4">Supports: .txt, .docx, .pdf, .xlsx, .xls (Max 10MB)</p>
             
             <input
               type="file"
-              accept=".txt,.pdf,.docx"
+              accept=".txt,.pdf,.docx,.xlsx,.xls"
               onChange={handleFileSelect}
               className="hidden"
               id="file-upload"
