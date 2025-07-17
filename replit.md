@@ -96,21 +96,21 @@ This is a Business Requirements Document (BRD) generator application built for I
 ## Recent Changes
 
 July 17, 2025:
-- **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with detailed formatting
-  - **Given-When-Then Parsing**: Automatically detects and formats behavioral acceptance criteria using Given-When-Then structure
-  - **Structured Layout**: Each criterion displayed in individual cards with numbered sequence and clear visual hierarchy
-  - **Color-Coded Components**: Blue for preconditions (Given), Purple for triggers (When), Green for expected results (Then)
-  - **Enhanced Readability**: Background highlighting, borders, and spacing for better comprehension
-  - **Legend System**: Visual guide explaining the Given-When-Then format for users
-  - **Count Display**: Shows total number of acceptance criteria for each requirement
-- **Improved AI Prompt Engineering**: Enhanced BRD generation to produce 5-8 detailed, testable acceptance criteria covering:
-  - Functional behavior and expected outcomes
-  - Input validation and error handling scenarios  
-  - Security and authentication requirements
-  - Performance and response time criteria
-  - Integration and data flow validation
-  - User interface and experience requirements
-  - Compliance and audit trail requirements
+- **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with highly detailed formatting
+  - **Advanced Given-When-Then Parsing**: Robust regex-based parsing to handle complex, granular acceptance criteria
+  - **Premium Visual Design**: Each criterion in individual cards with gradient numbering, shadows, and hover effects
+  - **Detailed Color-Coded Structure**: Enhanced blue borders for Given (preconditions), purple for When (triggers), green for Then (outcomes)
+  - **Professional Layout**: Improved spacing, typography, and visual hierarchy for better readability of longer, detailed criteria
+  - **Comprehensive Format Guide**: Enhanced legend with detailed explanations of Given-When-Then methodology
+  - **Granular Count Display**: Shows total criteria count with emphasis on detailed testing conditions
+- **Advanced AI Prompt Engineering**: Enhanced BRD generation to produce 8-12 highly granular, detailed acceptance criteria featuring:
+  - **Specific Data Values**: Exact inputs, outputs, user roles, system states, and quantifiable metrics
+  - **Measurable Performance Criteria**: Response times, load conditions, and specific thresholds
+  - **Detailed Error Scenarios**: Exact error messages, validation rules, and edge cases
+  - **Comprehensive Security Flows**: Authentication scenarios with specific user roles and security checks
+  - **Integration Test Cases**: Specific system responses and integration failure handling
+  - **UI/UX Specifications**: Precise visual feedback, layout requirements, and responsive design criteria
+  - **Regulatory Compliance**: Specific RBI/KYC validation requirements and audit trail specifications
 
 June 27, 2025:
 - **Major BRD Enhancement Update**: Comprehensive expansion of BRD generation capabilities

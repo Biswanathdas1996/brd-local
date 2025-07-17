@@ -450,14 +450,22 @@ Ensure all requirements are:
 - Compliant with Indian banking regulations (RBI, SEBI, IRDAI)
 - Aligned with digital transformation goals
 
-**Important: For acceptance criteria, provide at least 5-8 detailed, testable conditions that cover:**
-- Functional behavior and expected outcomes
-- Input validation and error handling scenarios
-- Security and authentication requirements
-- Performance and response time criteria
-- Integration and data flow validation
-- User interface and experience requirements
-- Compliance and audit trail requirements`;
+**Critical: For acceptance criteria, provide 8-12 highly granular, detailed testable conditions using strict Given-When-Then format. Each criterion must be specific and cover:**
+- Functional behavior with specific inputs and expected outputs
+- Input validation scenarios with exact error messages
+- Security and authentication flows with specific user roles
+- Performance criteria with measurable response times and load conditions
+- Integration scenarios with specific system responses
+- User interface behavior with specific actions and visual feedback
+- Compliance requirements with specific regulatory checks
+- Edge cases and error handling with specific system responses
+
+**Format Requirements:**
+- Each criterion MUST start with "Given" (preconditions), include "When" (trigger/action), and end with "Then" (expected outcome)
+- Be extremely specific about data values, user roles, system states, and expected results
+- Include quantifiable metrics (response times, data limits, user counts)
+- Cover both positive and negative test scenarios
+- Specify exact error messages and system responses`;
 
   const userPrompt = `Based on the following call transcript and context, generate a comprehensive Business Requirements Document:
 
@@ -496,14 +504,18 @@ Please provide a comprehensive response in the following JSON format:
       "priority": "High",
       "complexity": "Medium",
       "acceptanceCriteria": [
-        "Given valid customer credentials, when user initiates the process, then system should authenticate within 3 seconds",
-        "Given incomplete required fields, when user submits form, then system should display specific field-level validation errors",
-        "Given successful transaction, when process completes, then system should generate audit trail with timestamp and user ID",
-        "Given system processing, when response time exceeds 5 seconds, then system should display progress indicator",
-        "Given user input validation, when invalid data is entered, then system should prevent submission and show clear error messages",
-        "Given successful completion, when data is saved, then system should provide confirmation message with reference number",
-        "Given integration requirements, when external system is unavailable, then system should handle gracefully with appropriate error message",
-        "Given regulatory compliance, when transaction is processed, then all RBI/KYC requirements must be validated and logged"
+        "Given a customer with valid KYC documents and PAN card number 'ABCDE1234F', when the customer submits loan application with all mandatory fields filled, then the system should validate PAN format and respond within 2 seconds with application reference number starting with 'LON'",
+        "Given a loan application form with missing mandatory field 'Annual Income', when the customer clicks Submit button, then the system should highlight the missing field in red color and display error message 'Annual Income is required for loan processing' without submitting the form",
+        "Given a customer enters annual income as '50000' and loan amount as '5000000', when the system validates debt-to-income ratio, then the system should reject the application and display 'Requested loan amount exceeds 10x annual income limit as per RBI guidelines'",
+        "Given a valid customer session with role 'CUSTOMER' accessing loan application at 2:30 PM, when the customer submits completed application, then the system should log audit entry with timestamp, customer ID, IP address, and application data to compliance database within 1 second",
+        "Given system load of 500 concurrent users during peak hours (9 AM - 11 AM), when a new customer accesses loan application page, then the page should load completely within 3 seconds and all form fields should be interactive",
+        "Given a customer with expired session token, when the customer attempts to submit loan application, then the system should redirect to login page with message 'Session expired. Please login again to continue your application' and preserve form data in local storage",
+        "Given core banking system is down for maintenance, when customer submits loan application, then the system should queue the application and display 'Application submitted successfully. Reference: [ID]. Processing will begin once banking systems are available' with email notification",
+        "Given a successful loan application submission with reference 'LON2025001', when the process completes, then the system should send SMS to registered mobile number with format 'Your loan application LON2025001 has been submitted. Track status at [URL]' within 30 seconds",
+        "Given a customer enters special characters '!@#$%' in Name field, when validation runs, then the system should show error 'Name should contain only alphabets and spaces' and prevent form submission",
+        "Given a loan application with amount ₹500,000 for customer with CIBIL score 750, when risk assessment runs, then the system should auto-approve and generate welcome email within 5 minutes with loan terms and next steps",
+        "Given customer uploads identity document exceeding 5MB size, when upload validation runs, then the system should show progress bar and error 'File size should not exceed 5MB. Please compress and try again' with option to retry upload",
+        "Given a mobile user on device with screen width 375px, when accessing loan application form, then all form fields should be single-column layout, buttons should be minimum 44px height, and form should be scrollable without horizontal overflow"
       ],
       "userStories": [
         {
