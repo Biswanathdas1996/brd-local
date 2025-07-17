@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Upload, FileText, CheckCircle, Clock } from "lucide-react";
+import { Upload, FileText, CheckCircle, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
 interface FileUploadProps {
@@ -12,6 +14,7 @@ export default function FileUpload({ onTranscriptUploaded }: FileUploadProps) {
   const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [viewingSample, setViewingSample] = useState<any>(null);
 
   // Fetch sample transcripts
   const { data: sampleTranscripts } = useQuery({
@@ -163,15 +166,25 @@ export default function FileUpload({ onTranscriptUploaded }: FileUploadProps) {
                   </p>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleSampleLoad(sample.name)}
-                disabled={loadSampleMutation.isPending}
-                className="text-pwc-blue border-pwc-blue hover:bg-pwc-blue hover:text-white"
-              >
-                {loadSampleMutation.isPending ? <Clock className="h-3 w-3" /> : "Use Sample"}
-              </Button>
+              <div className="flex space-x-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setViewingSample(sample)}
+                  className="text-slate-600 hover:text-pwc-blue hover:bg-blue-50"
+                >
+                  👁️ View
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleSampleLoad(sample.name)}
+                  disabled={loadSampleMutation.isPending}
+                  className="text-pwc-blue border-pwc-blue hover:bg-pwc-blue hover:text-white"
+                >
+                  {loadSampleMutation.isPending ? <Clock className="h-3 w-3" /> : "Use Sample"}
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -219,6 +232,65 @@ export default function FileUpload({ onTranscriptUploaded }: FileUploadProps) {
           </>
         )}
       </div>
+
+      {/* Sample File Viewer Dialog */}
+      <Dialog open={!!viewingSample} onOpenChange={() => setViewingSample(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-pwc-blue" />
+                <span>{viewingSample?.name}</span>
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewingSample(null)}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-sm text-slate-600">
+              {viewingSample?.processArea.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} - {viewingSample?.targetSystem}
+            </div>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[60vh] w-full border rounded-md">
+            <div className="p-4 space-y-4">
+              <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed text-slate-700 bg-slate-50 p-4 rounded-md">
+                {viewingSample?.content}
+              </pre>
+            </div>
+          </ScrollArea>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setViewingSample(null)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                handleSampleLoad(viewingSample.name);
+                setViewingSample(null);
+              }}
+              disabled={loadSampleMutation.isPending}
+              className="bg-pwc-blue hover:bg-blue-600"
+            >
+              {loadSampleMutation.isPending ? (
+                <>
+                  <Clock className="mr-2 h-4 w-4" />
+                  Loading...
+                </>
+              ) : (
+                "Use This Sample"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
