@@ -266,15 +266,85 @@ export default function BrdDisplay({ brd, onRequirementUpdate }: BrdDisplayProps
                     {/* Acceptance Criteria */}
                     {req.acceptanceCriteria && req.acceptanceCriteria.length > 0 && (
                       <div className="mb-3">
-                        <h5 className="font-medium text-slate-800 mb-2">Acceptance Criteria:</h5>
-                        <ul className="space-y-1">
-                          {req.acceptanceCriteria.map((criteria: string, idx: number) => (
-                            <li key={idx} className="text-sm text-slate-600 flex items-start">
-                              <span className="text-green-600 mr-2">✓</span>
-                              {criteria}
-                            </li>
-                          ))}
-                        </ul>
+                        <h5 className="font-medium text-slate-800 mb-3 flex items-center">
+                          <span className="bg-green-100 text-green-800 p-1 rounded mr-2">✓</span>
+                          Acceptance Criteria ({req.acceptanceCriteria.length} conditions)
+                        </h5>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="space-y-3">
+                            {req.acceptanceCriteria.map((criteria: string, idx: number) => {
+                              // Parse Given-When-Then format
+                              const isGivenWhenThen = criteria.toLowerCase().includes('given') && 
+                                                    criteria.toLowerCase().includes('when') && 
+                                                    criteria.toLowerCase().includes('then');
+                              
+                              if (isGivenWhenThen) {
+                                const parts = criteria.split(/(?=when\s|then\s)/i);
+                                const given = parts[0]?.replace(/^given\s*/i, '').trim();
+                                const when = parts[1]?.replace(/^when\s*/i, '').trim();
+                                const then = parts[2]?.replace(/^then\s*/i, '').trim();
+                                
+                                return (
+                                  <div key={idx} className="bg-white border border-green-300 rounded-md p-3">
+                                    <div className="flex items-start space-x-2">
+                                      <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                                        {idx + 1}
+                                      </span>
+                                      <div className="flex-1 space-y-1">
+                                        {given && (
+                                          <div className="text-sm">
+                                            <span className="font-semibold text-blue-700">Given:</span>
+                                            <span className="text-slate-700 ml-1">{given}</span>
+                                          </div>
+                                        )}
+                                        {when && (
+                                          <div className="text-sm">
+                                            <span className="font-semibold text-purple-700">When:</span>
+                                            <span className="text-slate-700 ml-1">{when}</span>
+                                          </div>
+                                        )}
+                                        {then && (
+                                          <div className="text-sm">
+                                            <span className="font-semibold text-green-700">Then:</span>
+                                            <span className="text-slate-700 ml-1">{then}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              } else {
+                                return (
+                                  <div key={idx} className="bg-white border border-green-300 rounded-md p-3">
+                                    <div className="flex items-start space-x-2">
+                                      <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                                        {idx + 1}
+                                      </span>
+                                      <span className="text-sm text-slate-700 flex-1">{criteria}</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            })}
+                          </div>
+                          
+                          <div className="mt-4 pt-3 border-t border-green-200">
+                            <div className="text-xs text-green-700 flex items-center space-x-4">
+                              <span className="flex items-center">
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
+                                Given = Preconditions
+                              </span>
+                              <span className="flex items-center">
+                                <span className="w-2 h-2 bg-purple-500 rounded-full mr-1"></span>
+                                When = Trigger/Action
+                              </span>
+                              <span className="flex items-center">
+                                <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                Then = Expected Result
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
 

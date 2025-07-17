@@ -95,6 +95,23 @@ This is a Business Requirements Document (BRD) generator application built for I
 
 ## Recent Changes
 
+July 17, 2025:
+- **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with detailed formatting
+  - **Given-When-Then Parsing**: Automatically detects and formats behavioral acceptance criteria using Given-When-Then structure
+  - **Structured Layout**: Each criterion displayed in individual cards with numbered sequence and clear visual hierarchy
+  - **Color-Coded Components**: Blue for preconditions (Given), Purple for triggers (When), Green for expected results (Then)
+  - **Enhanced Readability**: Background highlighting, borders, and spacing for better comprehension
+  - **Legend System**: Visual guide explaining the Given-When-Then format for users
+  - **Count Display**: Shows total number of acceptance criteria for each requirement
+- **Improved AI Prompt Engineering**: Enhanced BRD generation to produce 5-8 detailed, testable acceptance criteria covering:
+  - Functional behavior and expected outcomes
+  - Input validation and error handling scenarios  
+  - Security and authentication requirements
+  - Performance and response time criteria
+  - Integration and data flow validation
+  - User interface and experience requirements
+  - Compliance and audit trail requirements
+
 June 27, 2025:
 - **Major BRD Enhancement Update**: Comprehensive expansion of BRD generation capabilities
   - **Enhanced Functional Requirements**: Added acceptance criteria, user stories ("As a [role], I want [goal] so that [benefit]"), and dependency tracking

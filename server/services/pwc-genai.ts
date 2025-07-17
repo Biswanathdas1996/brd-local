@@ -444,11 +444,20 @@ Focus specifically on Indian banking context with:
 - Digital banking transformation
 
 Ensure all requirements are:
-- Specific and measurable with clear acceptance criteria
-- Include user stories in "As a [role], I want [goal] so that [benefit]" format
+- Specific and measurable with comprehensive acceptance criteria covering functional behavior, performance, security, and compliance aspects
+- Include detailed user stories in "As a [role], I want [goal] so that [benefit]" format
 - Technically feasible with proper dependencies identified
 - Compliant with Indian banking regulations (RBI, SEBI, IRDAI)
-- Aligned with digital transformation goals`;
+- Aligned with digital transformation goals
+
+**Important: For acceptance criteria, provide at least 5-8 detailed, testable conditions that cover:**
+- Functional behavior and expected outcomes
+- Input validation and error handling scenarios
+- Security and authentication requirements
+- Performance and response time criteria
+- Integration and data flow validation
+- User interface and experience requirements
+- Compliance and audit trail requirements`;
 
   const userPrompt = `Based on the following call transcript and context, generate a comprehensive Business Requirements Document:
 
@@ -487,8 +496,14 @@ Please provide a comprehensive response in the following JSON format:
       "priority": "High",
       "complexity": "Medium",
       "acceptanceCriteria": [
-        "Specific measurable condition 1",
-        "Specific measurable condition 2"
+        "Given valid customer credentials, when user initiates the process, then system should authenticate within 3 seconds",
+        "Given incomplete required fields, when user submits form, then system should display specific field-level validation errors",
+        "Given successful transaction, when process completes, then system should generate audit trail with timestamp and user ID",
+        "Given system processing, when response time exceeds 5 seconds, then system should display progress indicator",
+        "Given user input validation, when invalid data is entered, then system should prevent submission and show clear error messages",
+        "Given successful completion, when data is saved, then system should provide confirmation message with reference number",
+        "Given integration requirements, when external system is unavailable, then system should handle gracefully with appropriate error message",
+        "Given regulatory compliance, when transaction is processed, then all RBI/KYC requirements must be validated and logged"
       ],
       "userStories": [
         {
