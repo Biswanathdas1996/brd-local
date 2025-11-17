@@ -138,6 +138,8 @@ async function callLocalLLM(
 ): Promise<string> {
   const endpoint = process.env.LLM_ENDPOINT || "http://192.168.1.10:8000/generate";
   const model = process.env.LLM_MODEL || "gemma3:latest";
+  
+  console.log(`[LLM] Using endpoint: ${endpoint}, model: ${model}`);
 
   const fullPrompt = systemPrompt
     ? `${systemPrompt}\n\nUser: ${prompt}`
