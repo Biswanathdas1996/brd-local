@@ -112,6 +112,12 @@ November 17, 2025:
   - **Service File**: New local-llm.ts service replacing pwc-genai.ts
   - **Maintained Features**: All existing AI capabilities preserved (BRD generation, requirement enhancement, implementation activities, test cases)
   - **Real-time Status Monitoring**: LLM connection status indicator with auto-refresh every 30 seconds
+  - **Enhanced Prompts**: Comprehensive, directive prompts optimized for local LLM with explicit requirements:
+    - Minimum content requirements for each section (8-12 functional requirements, 6-8 non-functional, etc.)
+    - Detailed formatting specifications (300+ word executive summary, 100+ word requirement descriptions)
+    - Explicit structure guidance (Given-When-Then acceptance criteria, specific user story format)
+    - Quality standards (8-12 acceptance criteria per requirement with exact values and metrics)
+    - Mandatory Indian banking context (RBI compliance, UPI integration, KYC/AML, data localization)
 
 July 17, 2025:
 - **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with highly detailed formatting

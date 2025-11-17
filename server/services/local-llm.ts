@@ -257,39 +257,36 @@ Format your response as JSON:
 }
 
 export async function generateBrd(request: BrdRequest): Promise<BrdContent> {
-  const systemPrompt = `You are an expert business analyst specializing in financial services and enterprise software implementations. Your task is to analyze call transcripts from business requirements gathering workshops and generate comprehensive Business Requirements Documents (BRDs).
+  const systemPrompt = `You are an expert business analyst specializing in Indian banking and financial services implementations. Generate a COMPREHENSIVE, DETAILED Business Requirements Document (BRD) with ALL 12 sections fully populated.
 
-Generate a comprehensive BRD with enhanced sections:
+CRITICAL: Each section MUST contain substantial, detailed content. DO NOT generate minimal or placeholder content.
 
-1. **Table of Contents** - A structured outline with sections and page numbers
-2. **Executive Summary** - High-level overview of business objectives and proposed solution
-3. **Functional Requirements** - Enhanced with acceptance criteria, user stories, and dependencies
-4. **Non-Functional Requirements** - Categorized with specific metrics for scalability, availability, security, usability, and compliance
-5. **Integration Requirements** - Detailed with API specifications and data flow processes
-6. **Business Process Flows** - Current state vs future state workflows with step-by-step processes
-7. **User Interface Requirements** - Screen specifications, navigation flows, and accessibility standards
-8. **RACI Matrix** - Responsibility assignment matrix for key tasks and deliverables
-9. **Assumptions** - Key assumptions made during requirements gathering
-10. **Constraints** - Technical, business, and regulatory constraints
-11. **Risk Management** - Categorized risks with probability, impact, mitigation, and ownership
-12. **Changelog** - Version control and change tracking
+REQUIRED OUTPUT STRUCTURE - ALL sections are MANDATORY:
 
-Focus specifically on Indian banking context with:
-- RBI (Reserve Bank of India) regulatory compliance
-- Digital India initiatives
-- UPI and payment system integration
-- KYC/AML requirements
-- Core banking system modernization
-- Digital banking transformation
+1. TABLE OF CONTENTS (minimum 12 entries): List ALL sections with page numbers
+2. EXECUTIVE SUMMARY (minimum 300 words): Business context, objectives, scope, stakeholders, expected benefits, timeline
+3. FUNCTIONAL REQUIREMENTS (minimum 8-12 requirements): Each with id, title, detailed description (100+ words), priority, complexity, 8-12 specific acceptance criteria, 2-3 user stories, dependencies
+4. NON-FUNCTIONAL REQUIREMENTS (minimum 6-8 requirements): Cover Performance, Security, Scalability, Availability, Usability, Compliance with detailed metrics
+5. INTEGRATION REQUIREMENTS (minimum 4-6 integrations): APIs, data flows, authentication details
+6. BUSINESS PROCESS FLOWS (minimum 3-5 processes): Current vs Future state, 6-10 detailed steps each
+7. USER INTERFACE REQUIREMENTS (minimum 5-8 screens): Screen specs, components, navigation, accessibility
+8. RACI MATRIX (minimum 8-12 tasks): Detailed responsibility assignments
+9. ASSUMPTIONS (minimum 8-10 items): Technical, business, and operational assumptions
+10. CONSTRAINTS (minimum 6-8 items): Budget, timeline, technical, regulatory constraints
+11. RISK MANAGEMENT (minimum 6-8 risks): Categories (Technical, Operational, Compliance, Business) with probability, impact, mitigation, owner
+12. CHANGELOG (minimum 1 entry): Version history
 
-Ensure all requirements are:
-- Specific and measurable with comprehensive acceptance criteria
-- Include detailed user stories in "As a [role], I want [goal] so that [benefit]" format
-- Technically feasible with proper dependencies identified
-- Compliant with Indian banking regulations (RBI, SEBI, IRDAI)
-- Aligned with digital transformation goals`;
+Indian Banking Context - MUST address:
+- RBI regulations and compliance requirements
+- Digital India initiatives and government programs
+- UPI/IMPS/NEFT payment integrations
+- KYC/AML/CKYC requirements and procedures
+- Core Banking System (CBS) integration
+- Digital banking channels (Mobile, Internet Banking)
+- Security standards (2FA, encryption, audit trails)
+- Data localization and privacy (IT Act, RBI guidelines)`;
 
-  const userPrompt = `Based on the following call transcript and context, generate a comprehensive Business Requirements Document:
+  const userPrompt = `Generate a COMPREHENSIVE BRD based on this transcript. Every section must be detailed and complete.
 
 **Context:**
 - Client: ${request.clientName}
@@ -299,10 +296,50 @@ Ensure all requirements are:
 - Template: ${request.template}
 - Analysis Depth: ${request.analysisDepth}
 
-**Transcript Content:**
+**Transcript:**
 ${request.transcriptContent}
 
-Please provide a comprehensive response in JSON format with all sections: tableOfContents, executiveSummary, functionalRequirements (with id, title, description, priority, complexity, acceptanceCriteria array, userStories array, dependencies array), nonFunctionalRequirements, integrationRequirements, businessProcessFlows, userInterfaceRequirements, raciMatrix, assumptions, constraints, riskManagement, and changelog.`;
+REQUIREMENTS FOR COMPREHENSIVE OUTPUT:
+
+**tableOfContents**: Array with minimum 12 sections (Executive Summary, Functional Requirements, Non-Functional Requirements, Integration Requirements, Business Process Flows, User Interface Requirements, RACI Matrix, Assumptions, Constraints, Risk Management, Changelog, etc.)
+
+**executiveSummary**: 300+ word summary covering: business problem, proposed solution, key stakeholders, expected benefits, implementation timeline, budget overview, strategic alignment
+
+**functionalRequirements**: 8-12 detailed requirements, each with:
+- Unique ID (FR-001, FR-002, etc.)
+- Clear title
+- Detailed description (100+ words explaining what, why, how)
+- Priority (Critical/High/Medium/Low)
+- Complexity (High/Medium/Low)
+- acceptanceCriteria: 8-12 specific, measurable criteria in Given-When-Then format with exact values, error messages, performance metrics
+- userStories: 2-3 stories in "As a [specific role], I want [specific goal] so that [specific benefit]" format
+- dependencies: Related requirements or systems
+
+**nonFunctionalRequirements**: 6-8 requirements across categories:
+- Performance: Response times, throughput (with scalabilityMetrics, usabilityStandards)
+- Security: Encryption, authentication, authorization (with securityStandards)
+- Scalability: User capacity, transaction volume (with scalabilityMetrics)
+- Availability: Uptime requirements, DR (with availabilityRequirements)
+- Compliance: RBI/SEBI/IRDAI regulations (with complianceDetails)
+- Usability: User experience standards (with usabilityStandards)
+
+**integrationRequirements**: 4-6 integrations with apiSpecifications (endpoints, dataFormats, authentication) and detailed dataFlow steps
+
+**businessProcessFlows**: 3-5 processes, each with processName, currentState description, futureState description, and 6-10 detailed steps (stepNumber, description, actor, decision points)
+
+**userInterfaceRequirements**: 5-8 screens with screenName, description, components array, navigationFlow, accessibility (WCAG 2.1), responsiveness details
+
+**raciMatrix**: 8-12 tasks with specific task names and assigned roles (Responsible, Accountable, Consulted, Informed)
+
+**assumptions**: 8-10 specific assumptions about technology, business processes, user behavior, regulatory environment
+
+**constraints**: 6-8 constraints covering budget limits, timeline restrictions, technical limitations, regulatory requirements
+
+**riskManagement**: 6-8 risks with unique id, category (Technical/Operational/Compliance/Business), detailed description, probability (High/Medium/Low), impact (High/Medium/Low), specific mitigation strategy, and owner role
+
+**changelog**: At least 1 entry with version 1.0, today's date, author, and "Initial BRD creation" changes
+
+Return ONLY valid JSON. Ensure all arrays have the minimum required items with complete, detailed information.`;
 
   try {
     const responseText = await callLocalLLM(userPrompt, systemPrompt, 0.3);
