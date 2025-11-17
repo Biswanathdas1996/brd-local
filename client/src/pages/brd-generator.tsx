@@ -54,6 +54,7 @@ import {
 import FileUpload from "@/components/file-upload";
 import BrdDisplay from "@/components/brd-display";
 import AddTeamDialog from "@/components/add-team-dialog";
+import LLMStatus from "@/components/llm-status";
 
 // BrdTabs Component
 interface BrdTabsProps {
@@ -1128,6 +1129,8 @@ export default function BrdGenerator() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <LLMStatus />
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* Client & Team Selection */}

@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
 import { processUploadedFile, getSampleTranscripts } from "./services/fileProcessor";
-import { generateBrd, generateRequirementEnhancements, generateImplementationActivities, generateTestCases } from "./services/pwc-genai";
+import { generateBrd, generateRequirementEnhancements, generateImplementationActivities, generateTestCases } from "./services/local-llm";
 import { insertTranscriptSchema, insertBrdSchema, insertTeamSchema, insertClientSchema } from "@shared/schema";
 
 const upload = multer({
@@ -25,6 +25,53 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Check LLM connection status
+  app.get("/api/llm-status", async (req, res) => {
+    const endpoint = process.env.LLM_ENDPOINT || "http://192.168.1.10:8000/generate";
+    const model = process.env.LLM_MODEL || "gemma3:latest";
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: model,
+          prompt: "test",
+          temperature: 0.7,
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        res.json({ 
+          connected: true, 
+          endpoint: endpoint,
+          model: model,
+          message: "LLM service is reachable" 
+        });
+      } else {
+        res.json({ 
+          connected: false, 
+          endpoint: endpoint,
+          model: model,
+          message: `LLM service returned status ${response.status}` 
+        });
+      }
+    } catch (error: any) {
+      res.json({ 
+        connected: false, 
+        endpoint: endpoint,
+        model: model,
+        message: error.message || "Failed to connect to LLM service" 
+      });
+    }
+  });
+
   // Get all clients
   app.get("/api/clients", async (req, res) => {
     try {

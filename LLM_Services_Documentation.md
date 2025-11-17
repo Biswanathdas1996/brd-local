@@ -6,13 +6,13 @@ This document outlines the Large Language Model (LLM) services integrated into t
 
 ## Primary LLM Service
 
-### PwC GenAI Shared Service
+### Local LLM Service (Gemma3)
 
-**Service Provider**: PwC Internal GenAI Infrastructure  
-**Model**: `vertex_ai.gemini-2.0-flash` (Gemini 2.0 Flash via Google Vertex AI)  
-**Integration Location**: `server/services/pwc-genai.ts`  
-**API Endpoint**: `https://genai-sharedservice-americas.pwc.com/completions`  
-**Authentication**: Dual header authentication with `API-Key` and `Authorization: Bearer` using `PWC_GENAI_API_KEY` environment variable
+**Service Provider**: Local LLM Endpoint  
+**Model**: Configurable (default: `gemma3:latest`)  
+**Integration Location**: `server/services/local-llm.ts`  
+**API Endpoint**: Configurable via `LLM_ENDPOINT` environment variable (default: `http://192.168.1.10:8000/generate`)  
+**Authentication**: None required for local endpoint
 
 #### Key Features Used:
 - **Text Analysis**: Processes call transcripts and extracts business requirements
@@ -20,10 +20,10 @@ This document outlines the Large Language Model (LLM) services integrated into t
 - **Context Awareness**: Maintains banking domain knowledge and Indian regulatory context
 - **Multi-turn Conversations**: Supports requirement enhancement and refinement
 
-#### Token Limits:
-- **BRD Generation**: 4,000 tokens max output
-- **Requirement Enhancement**: 2,000 tokens max output
-- **Input Processing**: Handles extensive transcript content (varies by model limits)
+#### Configuration:
+- **LLM_ENDPOINT**: Custom endpoint URL (default: http://192.168.1.10:8000/generate)
+- **LLM_MODEL**: Model name to use (default: gemma3:latest)
+- **Temperature**: Configurable per request (default: 0.7 for general tasks, 0.3 for BRD generation)
 
 ## LLM Service Functions
 
@@ -58,16 +58,45 @@ interface BrdContent {
     description: string;
     priority: string;
     complexity: string;
+    acceptanceCriteria: string[];
+    userStories: Array<{
+      role: string;
+      goal: string;
+      benefit: string;
+    }>;
+    dependencies: string[];
   }>;
   nonFunctionalRequirements: Array<{
     id: string;
     title: string;
     description: string;
+    category: string;
   }>;
   integrationRequirements: Array<{
     id: string;
     title: string;
     description: string;
+  }>;
+  businessProcessFlows: Array<{
+    id: string;
+    processName: string;
+    currentState: string;
+    futureState: string;
+    steps: Array<{
+      stepNumber: number;
+      description: string;
+      actor: string;
+      decision?: string;
+    }>;
+  }>;
+  userInterfaceRequirements: Array<{
+    id: string;
+    screenName: string;
+    description: string;
+    components: string[];
+    navigationFlow: string;
+    accessibility: string;
+    responsiveness: string;
   }>;
   raciMatrix: Array<{
     task: string;
@@ -78,7 +107,15 @@ interface BrdContent {
   }>;
   assumptions: string[];
   constraints: string[];
-  riskMitigation: string[];
+  riskManagement: Array<{
+    id: string;
+    category: string;
+    description: string;
+    probability: string;
+    impact: string;
+    mitigation: string;
+    owner: string;
+  }>;
   changelog: Array<{
     version: string;
     date: string;
@@ -125,39 +162,104 @@ interface BrdContent {
 - Security considerations
 - Performance requirements
 
+### 3. Implementation Activities Generation (`generateImplementationActivities`)
+
+**Purpose**: Converts BRD content into actionable implementation plans tailored to the target system
+
+**Output Structure**:
+```typescript
+{
+  configurationActivities: Array<{
+    title: string;
+    description: string;
+    effort: string;
+    skillsRequired: string[];
+  }>;
+  developmentActivities: Array<{
+    title: string;
+    description: string;
+    effort: string;
+    skillsRequired: string[];
+  }>;
+  integrationActivities: Array<{
+    title: string;
+    description: string;
+    effort: string;
+    skillsRequired: string[];
+  }>;
+}
+```
+
+### 4. Test Case Generation (`generateTestCases`)
+
+**Purpose**: Creates comprehensive test cases from BRD content
+
+**Output Structure**:
+```typescript
+{
+  functionalTests: Array<{
+    id: string;
+    title: string;
+    description: string;
+    priority: string;
+    preconditions: string;
+    testSteps: string[];
+    expectedResult: string;
+  }>;
+  integrationTests: Array<{
+    id: string;
+    title: string;
+    description: string;
+    priority: string;
+    preconditions: string;
+    testSteps: string[];
+    expectedResult: string;
+  }>;
+  performanceTests: Array<{
+    id: string;
+    title: string;
+    description: string;
+    loadConditions: string;
+    acceptanceCriteria: string;
+  }>;
+}
+```
+
 ## API Integration Details
 
 ### Configuration
 
-**Environment Variables Required**:
+**Environment Variables**:
 ```bash
-PWC_GENAI_API_KEY=your_pwc_genai_api_key_here
+LLM_ENDPOINT=http://192.168.1.10:8000/generate  # Optional, defaults to this value
+LLM_MODEL=gemma3:latest  # Optional, defaults to gemma3:latest
 ```
 
-**API Integration**:
+**API Request Format**:
 ```typescript
-const PWC_GENAI_ENDPOINT = "https://genai-sharedservice-americas.pwc.com/completions";
+{
+  model: string;        // e.g., "gemma3:latest"
+  prompt: string;       // Combined system + user prompt
+  temperature: number;  // 0.0 to 1.0
+}
+```
 
-const response = await fetch(PWC_GENAI_ENDPOINT, {
-  method: 'POST',
-  headers: {
-    'accept': 'application/json',
-    'API-Key': process.env.PWC_GENAI_API_KEY,
-    'Authorization': `Bearer ${process.env.PWC_GENAI_API_KEY}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(requestBody)
-});
+**API Response Format**:
+```typescript
+{
+  response?: string;  // Primary response field
+  text?: string;      // Alternative response field
+  content?: string;   // Alternative response field
+}
 ```
 
 ### Error Handling
 
 **Common Error Scenarios**:
-1. **API Key Missing/Invalid**: Application fails to start, requires `PWC_GENAI_API_KEY` environment configuration
-2. **Rate Limiting**: PwC GenAI service rate limits handled with proper error responses
-3. **Content Parsing**: JSON extraction from AI responses with fallback handling
-4. **Network Connectivity**: PwC internal network connectivity requirements
-5. **Authentication**: Dual header authentication validation
+1. **Endpoint Unreachable**: Connection to local LLM service failed
+2. **Invalid Response**: No valid response from LLM
+3. **JSON Parsing**: Issues extracting JSON from LLM response
+4. **Timeout**: LLM taking too long to respond
 
 **Error Response Format**:
 ```typescript
@@ -205,23 +307,22 @@ const response = await fetch(PWC_GENAI_ENDPOINT, {
 ## Performance Considerations
 
 ### Response Times:
-- **BRD Generation**: ~20-45 seconds (varies by transcript length)
-- **Requirement Enhancement**: ~10-25 seconds
-- **Concurrent Requests**: Handled asynchronously with proper queuing
+- **BRD Generation**: Varies by LLM speed and transcript length
+- **Requirement Enhancement**: Varies by LLM speed
+- **Concurrent Requests**: Handled asynchronously
 
-### Cost Optimization:
-- Structured prompts to minimize token usage
+### Optimization:
+- Structured prompts to minimize processing time
 - Focused context provision
 - Efficient JSON parsing and validation
 
 ## Security and Privacy
 
 ### Data Handling:
-- **API Communications**: HTTPS-encrypted to PwC internal infrastructure
-- **Transcript Data**: Processed in-memory, remains within PwC security perimeter
+- **API Communications**: HTTP to local endpoint (consider HTTPS for production)
+- **Transcript Data**: Processed and sent to local LLM
 - **Generated Content**: Stored locally in PostgreSQL database
-- **API Keys**: Environment variable-based secure storage for PwC GenAI access
-- **Data Residency**: All processing occurs within PwC's controlled environment
+- **No External Services**: All processing remains on local infrastructure
 
 ### Compliance Considerations:
 - Banking data sensitivity awareness
@@ -231,9 +332,9 @@ const response = await fetch(PWC_GENAI_ENDPOINT, {
 ## Future Enhancements
 
 ### Potential Improvements:
-1. **Multi-Model Support**: Integration with additional LLM providers for redundancy
-2. **Fine-Tuning**: Custom model training on banking-specific datasets
-3. **Real-Time Processing**: Streaming responses for faster user feedback
+1. **HTTPS Support**: Add SSL/TLS for secure communication
+2. **Model Selection**: Support multiple models with dynamic selection
+3. **Streaming Responses**: Real-time streaming for faster user feedback
 4. **Advanced Analytics**: Requirement quality scoring and validation
 5. **Multi-Language Support**: Hindi and regional language processing capabilities
 
@@ -242,26 +343,15 @@ const response = await fetch(PWC_GENAI_ENDPOINT, {
 ### Key Metrics:
 - API response times
 - Success/failure rates
-- Token usage patterns
 - User satisfaction with generated content
 
 ### Maintenance Tasks:
-- Regular API key rotation
-- Model version updates
+- Model updates and version management
 - Prompt optimization based on user feedback
 - Performance monitoring and optimization
 
-## Usage Statistics
-
-**Current Implementation**:
-- **Active Endpoints**: 2 (BRD generation, requirement enhancement)
-- **Supported Languages**: English (primary), banking terminology in Hindi
-- **Target Systems**: 16 supported banking platforms
-- **Process Areas**: 9 specialized banking domains
-- **Template Formats**: 4 BRD template variations
-
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: June 27, 2025  
+**Document Version**: 2.0  
+**Last Updated**: November 17, 2025  
 **Maintained By**: BRD Generator Development Team

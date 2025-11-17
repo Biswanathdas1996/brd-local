@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a Business Requirements Document (BRD) generator application built for Indian banking advisory consultants. The application converts call transcripts into structured BRDs using AI technology, specifically leveraging Anthropic's Claude API. It features a full-stack architecture with a React frontend and Express.js backend, designed to streamline the process of creating professional business requirements documentation for Indian banking systems and regulatory compliance.
+This is a Business Requirements Document (BRD) generator application built for Indian banking advisory consultants. The application converts call transcripts into structured BRDs using AI technology, specifically leveraging a local Gemma3 LLM. It features a full-stack architecture with a React frontend and Express.js backend, designed to streamline the process of creating professional business requirements documentation for Indian banking systems and regulatory compliance.
 
 ## System Architecture
 
@@ -20,7 +20,7 @@ This is a Business Requirements Document (BRD) generator application built for I
 - **Language**: TypeScript with ES modules
 - **API Design**: RESTful API architecture
 - **File Processing**: Multer for file uploads with support for .txt, .pdf, and .docx files
-- **AI Integration**: Anthropic Claude API for BRD content generation
+- **AI Integration**: Local Gemma3 LLM for BRD content generation
 
 ### Data Storage Solutions
 - **Database**: PostgreSQL with Drizzle ORM and Neon serverless support
@@ -39,7 +39,7 @@ This is a Business Requirements Document (BRD) generator application built for I
 
 ### Core Services
 - **File Processor**: Handles transcript file uploads and content extraction
-- **Anthropic Service**: Integrates with Claude API for BRD generation
+- **Local LLM Service**: Integrates with local Gemma3 model for BRD generation
 - **Storage Layer**: Abstracted storage interface supporting both memory and database implementations
 
 ### Frontend Components
@@ -53,19 +53,19 @@ This is a Business Requirements Document (BRD) generator application built for I
 1. **File Upload**: Users upload transcript files (.txt, .pdf, .docx)
 2. **Content Extraction**: Backend processes files and extracts text content
 3. **Configuration**: Users select client, team, process area, and target system
-4. **AI Processing**: Transcript content is sent to PwC GenAI service for BRD generation
+4. **AI Processing**: Transcript content is sent to local LLM service for BRD generation
 5. **Result Storage**: Generated BRDs are stored with status tracking
 6. **Display**: Structured BRD content is presented to users with export options
 
 ## External Dependencies
 
 ### AI Services
-- **PwC GenAI Shared Service**: Internal AI service for BRD generation and requirement enhancement
-- **Model**: vertex_ai.gemini-2.0-flash (Gemini 2.0 Flash via Google Vertex AI)
-- **Endpoint**: https://genai-sharedservice-americas.pwc.com/completions
-- **Functions**: BRD generation from transcripts, functional requirement enhancement suggestions
-- **API Key Management**: Environment variable-based configuration (PWC_GENAI_API_KEY)
-- **Security**: All processing within PwC's controlled infrastructure
+- **Local LLM Service**: Local Gemma3 model for BRD generation and requirement enhancement
+- **Model**: Configurable (default: gemma3:latest)
+- **Endpoint**: Configurable via LLM_ENDPOINT environment variable (default: http://192.168.1.10:8000/generate)
+- **Functions**: BRD generation from transcripts, functional requirement enhancement, implementation activities, test case generation
+- **Configuration**: Environment variable-based endpoint and model configuration (LLM_ENDPOINT, LLM_MODEL)
+- **Security**: Local processing, no external API dependencies
 - **Documentation**: Comprehensive LLM services documentation available in LLM_Services_Documentation.md
 
 ### Database
@@ -90,10 +90,21 @@ This is a Business Requirements Document (BRD) generator application built for I
 
 ### Environment Configuration
 - **Database**: `DATABASE_URL` environment variable required
-- **AI Service**: `PWC_GENAI_API_KEY` environment variable required
+- **AI Service**: `LLM_ENDPOINT` (optional, defaults to http://192.168.1.10:8000/generate) and `LLM_MODEL` (optional, defaults to gemma3:latest)
 - **File Uploads**: Local uploads directory with 10MB size limit
 
 ## Recent Changes
+
+November 17, 2025:
+- **LLM Service Migration**: Replaced PwC GenAI integration with local LLM service
+  - **New Service**: Local Gemma3 model integration via configurable endpoint
+  - **Endpoint**: Configurable via LLM_ENDPOINT environment variable (default: http://192.168.1.10:8000/generate)
+  - **Model**: Configurable via LLM_MODEL environment variable (default: gemma3:latest)
+  - **API Format**: Simplified request/response format with model, prompt, and temperature parameters
+  - **No Authentication**: Direct local access without API key requirements
+  - **Updated Documentation**: Comprehensive updates to LLM_Services_Documentation.md
+  - **Service File**: New local-llm.ts service replacing pwc-genai.ts
+  - **Maintained Features**: All existing AI capabilities preserved (BRD generation, requirement enhancement, implementation activities, test cases)
 
 July 17, 2025:
 - **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with highly detailed formatting
