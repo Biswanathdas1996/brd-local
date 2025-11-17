@@ -63,9 +63,11 @@ This is a Business Requirements Document (BRD) generator application built for I
 - **Local LLM Service**: Local Gemma3 model for BRD generation and requirement enhancement
 - **Model**: Configurable (default: gemma3:latest)
 - **Endpoint**: Configurable via LLM_ENDPOINT environment variable (default: http://192.168.1.10:8000/generate)
+- **Current Configuration**: Using Cloudflare Tunnel at https://specialist-pharmacology-raised-gym.trycloudflare.com/generate
 - **Functions**: BRD generation from transcripts, functional requirement enhancement, implementation activities, test case generation
 - **Configuration**: Environment variable-based endpoint and model configuration (LLM_ENDPOINT, LLM_MODEL)
 - **Security**: Local processing, no external API dependencies
+- **Network Solution**: Cloudflare Tunnel used to expose local LLM service to Replit cloud environment
 - **Documentation**: Comprehensive LLM services documentation available in LLM_Services_Documentation.md
 
 ### Database
@@ -90,7 +92,9 @@ This is a Business Requirements Document (BRD) generator application built for I
 
 ### Environment Configuration
 - **Database**: `DATABASE_URL` environment variable required
-- **AI Service**: `LLM_ENDPOINT` (optional, defaults to http://192.168.1.10:8000/generate) and `LLM_MODEL` (optional, defaults to gemma3:latest)
+- **AI Service**: 
+  - `LLM_ENDPOINT` (configured: https://specialist-pharmacology-raised-gym.trycloudflare.com/generate)
+  - `LLM_MODEL` (optional, defaults to gemma3:latest)
 - **File Uploads**: Local uploads directory with 10MB size limit
 
 ## Recent Changes
@@ -99,12 +103,15 @@ November 17, 2025:
 - **LLM Service Migration**: Replaced PwC GenAI integration with local LLM service
   - **New Service**: Local Gemma3 model integration via configurable endpoint
   - **Endpoint**: Configurable via LLM_ENDPOINT environment variable (default: http://192.168.1.10:8000/generate)
+  - **Current Configuration**: Using Cloudflare Tunnel at https://specialist-pharmacology-raised-gym.trycloudflare.com/generate
   - **Model**: Configurable via LLM_MODEL environment variable (default: gemma3:latest)
   - **API Format**: Simplified request/response format with model, prompt, and temperature parameters
   - **No Authentication**: Direct local access without API key requirements
+  - **Network Solution**: Cloudflare Tunnel used to expose local LLM service to Replit cloud environment
   - **Updated Documentation**: Comprehensive updates to LLM_Services_Documentation.md
   - **Service File**: New local-llm.ts service replacing pwc-genai.ts
   - **Maintained Features**: All existing AI capabilities preserved (BRD generation, requirement enhancement, implementation activities, test cases)
+  - **Real-time Status Monitoring**: LLM connection status indicator with auto-refresh every 30 seconds
 
 July 17, 2025:
 - **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with highly detailed formatting
