@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -38,8 +39,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Seed the database with initial data
-  await seedDatabase();
+  // Seed the database with initial data (non-blocking)
+  seedDatabase().catch(err => {
+    console.error("Database seeding failed - continuing without seeding:", err.message);
+  });
 
   const server = await registerRoutes(app);
 
@@ -60,15 +63,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  // Serve the app on the configured port
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
+  server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
 })();
