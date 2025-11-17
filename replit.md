@@ -118,6 +118,12 @@ November 17, 2025:
     - Explicit structure guidance (Given-When-Then acceptance criteria, specific user story format)
     - Quality standards (8-12 acceptance criteria per requirement with exact values and metrics)
     - Mandatory Indian banking context (RBI compliance, UPI integration, KYC/AML, data localization)
+  - **Multi-Call Architecture**: BRD generation refactored into 8 separate focused API calls for better detail:
+    - Separate calls for: Summary/ToC, Functional Reqs, Non-Functional Reqs, Integration, Process Flows, UI, RACI/Constraints, Risk/Changelog
+    - Each section generated independently with full transcript context (no truncation)
+    - Section-specific error handling with graceful degradation (failed sections don't break entire BRD)
+    - Detailed logging showing successful generation of each section
+    - Optimized for context window limitations while maximizing content quality
 
 July 17, 2025:
 - **Enhanced Acceptance Criteria Display**: Completely revamped acceptance criteria visualization with highly detailed formatting
